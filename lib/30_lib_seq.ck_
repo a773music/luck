@@ -1,0 +1,95 @@
+public class Seq {
+
+    //-100000.00001 => static float blank;
+
+
+    [0.] @=> float notes[];
+    [0.] @=> float lengths[];
+
+    notes.clear();
+    lengths.clear();
+
+    0 => int running;
+    
+    public void print(){
+        <<<"notes:">>>;
+        for(0=> int i; i< notes.size(); i++){
+            <<<notes[i]>>>;
+        }
+    }
+
+    public void set(int new_notes[]){
+        notes.clear();
+        new_notes.size() => notes.size;
+        for(0 => int i; i<notes.size(); i++){
+            new_notes[i] => notes[i];
+        }
+    }
+    
+    public void set(float new_notes[]){
+        new_notes @=> notes;
+    }
+
+    public void set_lengths(int new_lengths[]){
+        lengths.clear();
+        new_lengths.size() => lengths.size;
+        for(0 => int i; i<lengths.size(); i++){
+            new_lengths[i] => lengths[i];
+        }
+    }
+    
+    public void set_lengths(float new_lengths[]){
+        new_lengths @=> lengths;
+    }
+
+    public void invert(){
+        
+    }    
+    
+    public void reverse(){
+        [0.] @=> float tmp[];
+        notes.size() => tmp.size;
+        for(0=>int i;i<notes.size();i++){
+            notes[i] => tmp[i];
+        }
+        for(0=>int i;i<notes.size();i++){
+            tmp[i] => notes[notes.size() - i -1];
+        }
+    } 
+
+    public void stop(){
+        <<<"in stop">>>;
+        0 => running;
+    }
+    
+    public void start(){
+        Time.sync();
+        1 => running;
+        spork ~ run();
+    }
+
+
+    private void run(){
+        0 => int i;
+        while(running){
+            <<<"i:" + i>>>;
+            <<<"length: " + lengths[i % lengths.size()]>>>;
+            
+            <<<"play: " + notes[i % notes.size()]>>>;
+            <<<"div:" + Time.sub(1)>>>;
+            if(lengths[i % lengths.size()] > 0){
+                <<<"if">>>;
+                Time.beat(lengths[i % lengths.size()]) => now;
+            }
+            else {
+                <<<"else">>>;
+                Time.beat() => now;
+            }
+            i++;
+        }
+    }
+
+}
+
+Seq dummy;
+10::week => now;

@@ -1,0 +1,130 @@
+public class Time {
+    60 => static float tempo;
+    
+    1 => static int factor; // this makes sub return larger numbers
+    3 * 64 * 4 / 4 => static float nbSubs;
+    
+    static Shred @ ticker_shred;
+    0 => static int running;
+    factor * 1024 => static int nb_ticks;
+
+
+    new timeEvent @=> static timeEvent @ tick;
+    new timeEvent @=> static timeEvent @ earlytick;
+    
+    -1 => static int _tick;
+
+    public static void toggle(){
+        if(running == 0){
+            start();
+            
+        }
+        else {
+            stop();
+            10::ms => now;
+        }
+    }
+    
+    public static void start(){
+        if(running == 0){
+            1 => running;
+            spork ~ ticker() @=> ticker_shred;
+        }
+    }
+
+    public static void stop(){
+        0 => running;
+        ticker_shred.exit();
+    }
+
+    public static void reset(){
+        reset(0);
+    }
+
+    public static void reset(float beat){
+        (beat * nbSubs) $ int => _tick;
+    }
+    
+    public static void ticker(){
+        0 => _tick;
+        while(true){
+            _tick => tick.tick;
+            earlytick.broadcast();
+            1::ms => now;
+            tick.broadcast();
+            beat() / 64. / 3.- 1::ms=> now;
+            (_tick + 1) % nb_ticks => _tick;
+        }
+    }
+
+    public static float sub(){
+        return sub(1.0);
+    }
+    
+    public static float sub(int div){
+        return sub(div$float);
+    }
+
+
+    public static float sub(float div){
+        1 / div => div;
+        return _tick * div / nbSubs;
+    }
+
+    public static void wait(float div){
+        tick => now;
+        while(sub(div)% 1 != 0){
+            tick => now;
+        }
+    }
+
+    public static void earlywait(float div){
+        earlytick => now;
+        while(sub(div)% 1 != 0){
+            earlytick => now;
+        }
+    }
+    
+    public static dur beat(){
+        return 60::second / tempo;
+    }
+
+    public static dur beat(float sub){
+        return beat() / sub;
+    }
+
+    public static void sync(){
+        sync(beat());
+    }
+
+    public static void sync(dur sync_to){
+        sync_to - (now % sync_to) => now;
+    }
+    
+    public static void sync(float beats){
+        beat() * beats => dur T;
+        sync(T);
+    }
+
+
+    public static void set_tempo(float target_tempo, dur change_time){
+        (Std.sgn(target_tempo - tempo) * 2) $ int => int tempo_inc;
+        (target_tempo - tempo) $ int / tempo_inc  => int nb_slices;
+        change_time / nb_slices => dur slice_length;
+      
+        for(0 => int i; i < nb_slices; i++){
+            tempo_inc +=> tempo;
+            slice_length => now;
+        }
+        target_tempo => tempo;
+    }
+    
+    public static void set_tempo(int target_tempo){
+        set_tempo(target_tempo,0::second);
+    }
+
+}
+
+Time dummy;
+
+100::week => now;

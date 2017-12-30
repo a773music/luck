@@ -1,0 +1,4 @@
+public class timeEvent extends Event{
+    int tick;
+}
+
