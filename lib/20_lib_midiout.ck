@@ -128,7 +128,7 @@ public class Midi {
     }
 
 
-    public static void note_on(float note, int channel, dur length){
+    public static void note(float note, int channel, dur length){
         note_on(note, channel);
         length => now;
         note_off(channel);
@@ -143,6 +143,7 @@ public class Midi {
             1::ms => now;
         }
         send_note(my_note, 127, channel);
+        Global.osc_note(channel,1);
         my_note => notes_on[channel];
     }
 
@@ -150,6 +151,7 @@ public class Midi {
         //(channel + 1)% 4 => channel;
         if(notes_on[channel]>=0){
             send_note(notes_on[channel], 0, channel);
+            Global.osc_note(channel,0);
             -1 => notes_on[channel];
         }
     }
@@ -160,14 +162,17 @@ public class Midi {
         trigger_nb % 8 => trigger_nb;
         if(triggers_on[trigger_nb] == 1){
             send_note(trigger_nb + 36, 0, 9);
+            Global.osc_trigger(trigger_nb,0);
             1::ms=>now;
         }
         send_note(trigger_nb + 36, 127, 9);
+        Global.osc_trigger(trigger_nb,1);
         1 => triggers_on[trigger_nb];
         length => now;
 
         if(triggers_on[trigger_nb] == 1){
             send_note(trigger_nb + 36, 0, 9);
+            Global.osc_trigger(trigger_nb,0);
         }
         0 => triggers_on[trigger_nb];
     }

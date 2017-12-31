@@ -1,6 +1,10 @@
 public class Global {
 
+    0 => static int part;
+    -1=> static int next_part;
     0 => static int last_step;
+
+    20::ms => static dur osc_init_time;
     
     [
     "global1","global2","global3",
@@ -26,16 +30,16 @@ public class Global {
     0,0,0,0,
     0,0,0,0] @=> static int mute[];
 
-    0 => static int part;
     
     spork ~ osc_listen();
     osc_send_all();
 
+    /*
     for(0=>int i; i<400; i++){
-        osc_tr_act(i);
-        .5::second => now;
+        osc_trigger(Math.random2(0,400));
+        .005::second => now;
     }
-
+    */
 
 
     public static void osc_send(string address, float value){
@@ -47,7 +51,11 @@ public class Global {
         xmit.start(address);
         value => xmit.add;
         xmit.send();
-        5::ms => now;
+    }
+
+    public static void osc_send(string address, float value, dur rest_time){
+        osc_send(address, value);
+        rest_time => now;
     }
 
     public static void osc_send(string address, string value){
@@ -59,74 +67,35 @@ public class Global {
         xmit.start(address);
         value => xmit.add;
         xmit.send();
-        5::ms => now;
     }
 
+    public static void osc_send(string address, string value, dur rest_time){
+        osc_send(address, value);
+        rest_time => now;
+    }
+    
     public static void osc_send_labels(){
-        osc_send("/page1/labelGl1",labels[0]);
-        osc_send("/page1/labelGl2",labels[1]);
-        osc_send("/page1/labelGl3",labels[2]);
-        osc_send("/page1/labelGl4",labels[3]);
-        osc_send("/page1/labelGl5",labels[4]);
-        osc_send("/page1/labelGl6",labels[5]);
-
-        osc_send("/page1/labelCh1",labels[6]);
-        osc_send("/page1/labelCh2",labels[7]);
-        osc_send("/page1/labelCh3",labels[8]);
-        osc_send("/page1/labelCh4",labels[9]);
-
-        osc_send("/page1/labelTr1",labels[10]);
-        osc_send("/page1/labelTr2",labels[11]);
-        osc_send("/page1/labelTr3",labels[12]);
-        osc_send("/page1/labelTr4",labels[13]);
-        osc_send("/page1/labelTr5",labels[14]);
-        osc_send("/page1/labelTr6",labels[15]);
-        osc_send("/page1/labelTr7",labels[16]);
-        osc_send("/page1/labelTr8",labels[17]);
-
-        osc_send("/page1/labelPart1",labels[18]);
-        osc_send("/page1/labelPart2",labels[19]);
-        osc_send("/page1/labelPart3",labels[20]);
-        osc_send("/page1/labelPart4",labels[21]);
-        osc_send("/page1/labelPart5",labels[22]);
-        osc_send("/page1/labelPart6",labels[23]);
-        osc_send("/page1/labelPart7",labels[24]);
-        osc_send("/page1/labelPart8",labels[25]);
-        osc_send("/page1/labelPart9",labels[26]);
+        for(1=>int i; i<=6; i++){
+            osc_send("/page1/labelGl"+i,labels[i-1],osc_init_time);
+        }
+        for(1=>int i; i<=4; i++){
+            osc_send("/page1/labelCh"+i,labels[i+5],osc_init_time);
+        }
+        for(1=>int i; i<=8; i++){
+            osc_send("/page1/labelTr"+i,labels[i+9],osc_init_time);
+        }
+        for(1=>int i; i<=9; i++){
+            osc_send("/page1/labelPart"+i,labels[i+17],osc_init_time);
+        }
 
 }
     
 
     public static void osc_send_part(){
-        osc_send("/page1/partA",0);
-        osc_send("/page1/partB",0);
-        osc_send("/page1/partC",0);
-        osc_send("/page1/partD",0);
-        osc_send("/page1/partE",0);
-        osc_send("/page1/partF",0);
-        osc_send("/page1/partG",0);
-        osc_send("/page1/partH",0);
-        osc_send("/page1/partI",0);
-        if(part == 0)
-            osc_send("/page1/partA",1);
-        else if(part == 1)
-            osc_send("/page1/partB",1);
-        else if(part == 2)
-            osc_send("/page1/partC",1);
-        else if(part == 3)
-            osc_send("/page1/partD",1);
-        else if(part == 4)
-            osc_send("/page1/partE",1);
-        else if(part == 5)
-            osc_send("/page1/partF",1);
-        else if(part == 6)
-            osc_send("/page1/partG",1);
-        else if(part == 7)
-            osc_send("/page1/partH",1);
-        else if(part == 8)
-            osc_send("/page1/partI",1);
-        else if(part == 9)
-            osc_send("/page1/partJ",1);
+        for(1=>int i; i<=9; i++){
+            osc_send("/page1/part"+i,0,osc_init_time);
+        }
+        osc_send("/page1/part"+(part+1),1,osc_init_time);
     }
 
     public static void osc_pulse(int step){
@@ -142,58 +111,79 @@ public class Global {
     }
 
 
-    public static void osc_ch_act(int channel){
-        spork ~ _osc_ch_act(channel);
+    public static void osc_note(int channel){
+        osc_note(channel, 1);
+        50::ms =>now;
+        osc_note(channel, 0);
     }
-
-    
-    public static void _osc_ch_act(int channel){
-        (channel % 4) + 1 => channel;
-        osc_send("/page1/activityCh"+channel,1);
-        250::ms =>now;
-        osc_send("/page1/activityCh"+channel,0);
-
-    }
-
-    public static void osc_tr_act(int trigger){
-        spork ~ _osc_tr_act(trigger);
-    }
-
-    
-    public static void _osc_tr_act(int trigger){
-        (trigger % 8) + 1 => trigger;
-        osc_send("/page1/activityTr"+trigger,1);
-        250::ms =>now;
-        osc_send("/page1/activityTr"+trigger,0);
-
-    }
-
-
-    
-    public static void osc_send_all(){
-        osc_send("/page1/faderCh1",ind[0]);
-        osc_send("/page1/faderCh2",ind[1]);
-        osc_send("/page1/faderCh3",ind[2]);
-        osc_send("/page1/faderCh4",ind[3]);
-
-        osc_send("/page1/faderTr1",ind[4]);
-        osc_send("/page1/faderTr2",ind[5]);
-        osc_send("/page1/faderTr3",ind[6]);
-        osc_send("/page1/faderTr4",ind[7]);
-        osc_send("/page1/faderTr5",ind[8]);
-        osc_send("/page1/faderTr6",ind[9]);
-        osc_send("/page1/faderTr7",ind[10]);
-        osc_send("/page1/faderTr8",ind[11]);
-
-        osc_send("/page1/global1",globals[0]);
-        osc_send("/page1/global2",globals[1]);
-        osc_send("/page1/global3",globals[2]);
-        osc_send("/page1/global4",globals[3]);
-        osc_send("/page1/global5",globals[4]);
-        osc_send("/page1/global6",globals[5]);
         
+    public static void osc_note(int channel, int state){
+        spork ~ _osc_note(channel, state);
+    }
+
+    
+    public static void _osc_note(int channel, int state){
+        (channel % 4) + 1 => channel;
+        osc_send("/page1/activityCh"+channel, state);
+    }
+
+    public static void osc_trigger(int trigger){
+        osc_trigger(trigger, 1);
+        50::ms => now;
+        osc_trigger(trigger, 0);
+    }
+    public static void osc_trigger(int trigger, int state){
+        spork ~ _osc_trigger(trigger, state);
+    }
+
+    
+    public static void _osc_trigger(int trigger, int state){
+        (trigger % 8) + 1 => trigger;
+        osc_send("/page1/activityTr"+trigger, state);
+    }
+
+
+    public static void osc_clear_activity(){
+        for(1=>int i; i<=4; i++){
+            osc_send("/page1/activityCh"+i, 0,osc_init_time);
+        }
+        for(1=>int i; i<=8; i++){
+            osc_send("/page1/activityTr"+i, 0,osc_init_time);
+        }
+        
+    }
+    
+    public static void osc_send_faders(){
+        for(1=>int i; i<=4; i++){
+            osc_send("/page1/faderCh"+i,ind[i-1],osc_init_time);
+        }
+        for(1=>int i; i<=8; i++){
+            osc_send("/page1/faderTr"+i,ind[i+3],osc_init_time);
+        }
+    }
+    
+    public static void osc_send_globals(){
+        for(1=>int i; i<=6; i++){
+            osc_send("/page1/global"+i,globals[i-1],osc_init_time);
+        }
+    }
+
+    public static void osc_send_mutes(){
+        for(1=>int i; i<=4; i++){
+            osc_send("/page1/muteCh"+i,mute[i-1],osc_init_time);
+        }
+        for(1=>int i; i<=8; i++){
+            osc_send("/page1/muteTr"+i,mute[i+3],osc_init_time);
+        }
+    }        
+        
+    public static void osc_send_all(){
+        osc_send_faders();
+        osc_send_globals();
         osc_send_part();
         osc_send_labels();
+        osc_clear_activity();
+        osc_send_mutes();
     }
 
     public static void osc_listen(){
