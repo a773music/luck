@@ -1,4 +1,3 @@
-110 => Time.tempo;
 0 => int channel;
 
 spork ~ trig(1.,0);
