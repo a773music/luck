@@ -5,7 +5,11 @@ public class Time {
         beat(beats) => dur T;
         T - (now % T) => now;
         .01::ms => now;
-        
+    }
+
+    public static void early_wait(float beats){
+        beat(beats) => dur T;
+        (T - (now % T)) => now;
     }
 
 
