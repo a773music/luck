@@ -2,8 +2,11 @@ public class Global {
 
     0 => static int part;
     -1=> static int next_part;
+    static int next_part_blink;
     0 => static int last_step;
     4 => static int part_sync;
+
+    [0,0,0,0,0,0,0,0,0] @=> static int part_ids[];
     
     0::ms => static dur osc_init_time;
     
@@ -33,16 +36,64 @@ public class Global {
 
     
     spork ~ osc_listen();
-    osc_send_all();
+    spork ~ next_part_blinker();
+    spork ~ part_switcher();
+    spork ~ osc_send_all();
 
-    /*
-    for(0=>int i; i<400; i++){
-        osc_trigger(Math.random2(0,400));
-        .005::second => now;
+    .005::ms => now;
+    Machine.add(part_name(part) + ".ck") => part_ids[part];
+
+
+    // -----------------------------------------------------
+    // parts
+    // -----------------------------------------------------
+
+    private static string part_name(int part_nb){
+        part_nb % 9 => part_nb;
+        return labels[18 + part_nb];
     }
-    */
+    
+    private static void next_part_blinker(){
+        while(true){
+            !next_part_blink => next_part_blink;
+            osc_send("/page1/part"+(next_part + 1) ,next_part_blink,osc_init_time);
+            1::ms => now;
+            osc_send_part();
+            499::ms => now;
+        }
+    }
 
+    private static void part_switcher(){
+        int id;
+        while(true){
+            Time.early_wait(part_sync);
+            if(next_part != -1){
+                Machine.add(part_name(next_part) + ".ck") => id;
+                if(id != 0){
+                    Machine.remove(part_ids[part]);
+                    -1 => part_ids[part];
+                    Machine.add(part_name(part) + "_.ck");
+                    <<<"id:" + id>>>;
+                    id => part_ids[next_part];
+                    next_part => part;
+                    -1 => next_part;
+                    //osc_send_part();
+                }
+                else {
+                    -1 => next_part;
+                    //osc_send_part();
+                    
+                    
+                }
+            }
+        }
+    }
+    
+    
 
+    // -----------------------------------------------------
+    // osc
+    // -----------------------------------------------------
     public static void osc_send(string address, float value){
         //"192.168.0.5" => string osc_remote_host;
         "192.168.43.124" => string osc_remote_host;
@@ -96,7 +147,9 @@ public class Global {
 
     public static void osc_send_part(){
         for(1=>int i; i<=9; i++){
-            osc_send("/page1/part"+i,0,osc_init_time);
+            if((i-1 != next_part) &&(i-1 != part)){
+                osc_send("/page1/part"+i,0,osc_init_time);
+            }
         }
         osc_send("/page1/part"+(part+1),1,osc_init_time);
     }
@@ -190,9 +243,12 @@ public class Global {
         osc_send_part();
         20::ms => now;
         osc_clear_activity();
+        20::ms => now;
         osc_send_mutes();
     }
 
+    
+    
     public static void osc_listen(){
         OscIn oin;
         8000 => oin.port;
@@ -204,10 +260,23 @@ public class Global {
             string address;
             float value;
             oin => now;
+            int pressed_part;
             while(oin.recv(msg)){
                 msg.address => address;
                 msg.getFloat(0) => value;
                 <<<address + "   " + value>>>;
+                for(1=>int i; i<=9; i++){
+                    if(address == "/page1/part"+i){
+                        i - 1 => pressed_part;
+                        if(part != pressed_part){
+                            pressed_part => next_part;
+                            <<<pressed_part>>>;
+                        }
+                        osc_send_part();
+                        1::ms => now;
+                    }
+                }
+                
             }
         }
         
