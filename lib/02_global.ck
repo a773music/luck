@@ -3,8 +3,9 @@ public class Global {
     0 => static int part;
     -1=> static int next_part;
     0 => static int last_step;
-
-    20::ms => static dur osc_init_time;
+    4 => static int part_sync;
+    
+    0::ms => static dur osc_init_time;
     
     [
     "global1","global2","global3",
@@ -43,7 +44,8 @@ public class Global {
 
 
     public static void osc_send(string address, float value){
-        "192.168.0.5" => string osc_remote_host;
+        //"192.168.0.5" => string osc_remote_host;
+        "192.168.43.124" => string osc_remote_host;
         9000 => int osc_remote_port;
 
         OscOut xmit;
@@ -59,7 +61,8 @@ public class Global {
     }
 
     public static void osc_send(string address, string value){
-        "192.168.0.5" => string osc_remote_host;
+        //"192.168.0.5" => string osc_remote_host;
+        "192.168.43.124" => string osc_remote_host;
         9000 => int osc_remote_port;
 
         OscOut xmit;
@@ -178,10 +181,14 @@ public class Global {
     }        
         
     public static void osc_send_all(){
-        osc_send_faders();
-        osc_send_globals();
-        osc_send_part();
         osc_send_labels();
+        20::ms => now;
+        osc_send_faders();
+        20::ms => now;
+        osc_send_globals();
+        20::ms => now;
+        osc_send_part();
+        20::ms => now;
         osc_clear_activity();
         osc_send_mutes();
     }
