@@ -5,7 +5,8 @@ public class Global {
     static int next_part_blink;
     0 => static int last_step;
     4 => static int part_sync;
-
+    4 => static int beats_pr_bar;
+    
     [0,0,0,0,0,0,0,0,0] @=> static int part_ids[];
     
     0::ms => static dur osc_init_time;
@@ -32,16 +33,42 @@ public class Global {
     
     [0,0,0,0,
     0,0,0,0,
-    0,0,0,0] @=> static int mute[];
+    0,0,0,0] @=> static int mutes[];
 
     
     spork ~ osc_listen();
     spork ~ next_part_blinker();
     spork ~ part_switcher();
     spork ~ osc_send_all();
-
+    spork ~ osc_pulser();
+    
     .005::ms => now;
     Machine.add(part_name(part) + ".ck") => part_ids[part];
+
+
+    // -----------------------------------------------------
+    // mutes
+    // -----------------------------------------------------
+    public static void mute(int ch_tr){
+        1 => mutes[ch_tr%mutes.size()];
+    }
+
+    public static void mute(int ch_tr[]){
+        for(0=>int i; i<ch_tr.size(); i++){
+            1 => mutes[ch_tr[i]%mutes.size()];
+        }
+    }
+
+    public static void unmute(int ch_tr){
+        0 => mutes[ch_tr%mutes.size()];
+    }
+
+    public static void unmute(int ch_tr[]){
+        for(0=>int i; i<ch_tr.size(); i++){
+            0 => mutes[ch_tr[i]%mutes.size()];
+        }
+    }
+
 
 
     // -----------------------------------------------------
@@ -95,8 +122,8 @@ public class Global {
     // osc
     // -----------------------------------------------------
     public static void osc_send(string address, float value){
-        //"192.168.0.5" => string osc_remote_host;
-        "192.168.43.124" => string osc_remote_host;
+        "192.168.0.5" => string osc_remote_host;
+        //"192.168.43.124" => string osc_remote_host;
         9000 => int osc_remote_port;
 
         OscOut xmit;
@@ -112,8 +139,8 @@ public class Global {
     }
 
     public static void osc_send(string address, string value){
-        //"192.168.0.5" => string osc_remote_host;
-        "192.168.43.124" => string osc_remote_host;
+        "192.168.0.5" => string osc_remote_host;
+        //"192.168.43.124" => string osc_remote_host;
         9000 => int osc_remote_port;
 
         OscOut xmit;
@@ -154,15 +181,25 @@ public class Global {
         osc_send("/page1/part"+(part+1),1,osc_init_time);
     }
 
+
+    public static void osc_pulser(){
+        while(true){
+            _osc_pulse(Time.sub(1));
+            Time.wait(1);
+        }
+    }
+    
+    /*
     public static void osc_pulse(int step){
         spork ~ _osc_pulse(step);
     }
-
+    */
     
     public static void _osc_pulse(int step){
-        (step % 9) + 1 => step;
-        osc_send("/page1/pulse"+step,1);
-        osc_send("/page1/pulse"+last_step,0);
+        <<<"inside _osc_pulse, step:" + step>>>;
+        ((step % beats_pr_bar) % 9) + 1 => step;
+        osc_send("/page1/pulse"+step,1,osc_init_time);
+        osc_send("/page1/pulse"+last_step,0,osc_init_time);
         step => last_step;
     }
 
@@ -209,6 +246,13 @@ public class Global {
         
     }
     
+    public static void osc_clear_pulse(){
+        for(1=>int i; i<=9; i++){
+            osc_send("/page1/pulse"+i,0, osc_init_time);
+        }
+        
+    }
+    
     public static void osc_send_faders(){
         for(1=>int i; i<=4; i++){
             osc_send("/page1/faderCh"+i,ind[i-1],osc_init_time);
@@ -226,14 +270,16 @@ public class Global {
 
     public static void osc_send_mutes(){
         for(1=>int i; i<=4; i++){
-            osc_send("/page1/muteCh"+i,mute[i-1],osc_init_time);
+            osc_send("/page1/muteCh"+i,mutes[i-1],osc_init_time);
         }
         for(1=>int i; i<=8; i++){
-            osc_send("/page1/muteTr"+i,mute[i+3],osc_init_time);
+            osc_send("/page1/muteTr"+i,mutes[i+3],osc_init_time);
         }
     }        
         
     public static void osc_send_all(){
+        osc_clear_pulse();
+        20::ms => now;
         osc_send_labels();
         20::ms => now;
         osc_send_faders();
