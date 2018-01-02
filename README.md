@@ -3,7 +3,7 @@
 Live environment in ChucK
 * Working with generative sequencing
 * Sound generating handled in eurorack (through cv.ocd)
-* Interfacing handled my TouchOSC
+* Interfacing handled by TouchOSC
 
 ## Usage
 A project is the equivalent of a "song" or a "track" and consists of:
@@ -13,8 +13,8 @@ A project is the equivalent of a "song" or a "track" and consists of:
 * 6 global values with sliders
 
 To load a project do
-...
+```
 cd projects/some_project
 chuck ../../lib/*.ck init.ck
-...
+```
 You might want to automate this in a bash script or similar
