@@ -1,28 +1,25 @@
 public class Midi {
-    5 => static int default_device; // FIXME 1 or 5, must autoset
+    0 => static int debug;
+
+    -1 => static int default_device; // FIXME 1 or 5, must autoset
     1 => static int default_channel;
 
     [0,0,0,0, 0,0,0,0] @=> static int triggers_on[];
     [-1,-1,-1,-1] @=> static int notes_on[];
 
     
-    0 => static int debug;
 
     static int keyboardInput;
     
     new MidiMsg @=> static MidiMsg @ midimessage;
     new MidiOut @=> static MidiOut @ midiport;
-    //new MidiOut @=> static MidiOut @ bcrMidiOut;
-    //"BCR2000 MIDI 1" @=> static string portName;
-
+    
     deviceName2Id("MIDIMATE II MIDI 1") => default_device;
-    //deviceName2Id("BCR2000 MIDI 2") => keyboardInput;
     midiport.open(default_device);
-    //bcrMidiOut.open(keyboardInput);
 
-
+    spork ~ midi_clock(midiport);
+    
     public static int deviceName2Id(string portName){
-        //"BCR2000 MIDI 1" => string portName;
         int success;
         for(0=>int i; i<10; i++){
             midiport.open(i) => success;
@@ -90,9 +87,54 @@ public class Midi {
         }
 		((command & 0x0f) << 4) | ((channel - 1) & 0xf) => midimessage.data1;
 		byte1 & 0x7f => midimessage.data2;
+        if(debug){
+            <<<"Sending midi out...">>>;
+            <<<"data1:"+ midimessage.data1>>>;
+            <<<"data2:"+ midimessage.data2>>>;
+            <<<"data3:"+ midimessage.data3>>>;
+        }
 		port.send(midimessage);
 	}
 
+    public static void midi_clock(MidiOut port){
+        midi_clock_stop(port);
+        midi_clock_start(port);
+        while(true){
+            midi_clock_tick(port);
+            Time.wait(1/24.);
+        }
+    }
+    
+
+    public static void midi_clock_start(MidiOut port){
+        if(debug){
+            <<<"sending midi clock start">>>;
+        }
+        250 => midimessage.data1;
+        0 => midimessage.data2;
+        0 => midimessage.data3;
+        midiport.send(midimessage);
+    }
+    
+    public static void midi_clock_stop(MidiOut port){
+        if(debug){
+            <<<"sending midi clock stop">>>;
+        }
+        252 => midimessage.data1;
+        0 => midimessage.data2;
+        0 => midimessage.data3;
+        midiport.send(midimessage);
+    }
+    
+    public static void midi_clock_tick(MidiOut port){
+        if(debug){
+            <<<"sending midi clock tick">>>;
+        }
+        248 => midimessage.data1;
+        0 => midimessage.data2;
+        0 => midimessage.data3;
+        midiport.send(midimessage);
+    }    
     
 
     /*
