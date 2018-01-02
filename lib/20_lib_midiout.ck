@@ -16,8 +16,11 @@ public class Midi {
     
     deviceName2Id("MIDIMATE II MIDI 1") => default_device;
     midiport.open(default_device);
+    
 
-    spork ~ midi_clock(midiport);
+    if(default_device >= 0){
+        spork ~ midi_clock(midiport);
+    }
     
     public static int deviceName2Id(string portName){
         int success;
