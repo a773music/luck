@@ -1,6 +1,6 @@
 # Luck
 
-Live environment in ChucK
+Live environment written in ChucK
 * Working with generative sequencing
 * Sound generating handled in eurorack (through cv.ocd)
 * Interfacing handled by TouchOSC
