@@ -6,7 +6,7 @@ Live environment written in ChucK
 * Interfacing handled by TouchOSC
 
 ## Prerequisites
-You need to patch you chuck for Luck to work, see folder "patches"
+You need to patch your chuck for Luck to work, see folder "patches"
 
 ## Usage
 A project is the equivalent of a "song" or a "track" and consists of:
