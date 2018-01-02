@@ -1,5 +1,4 @@
 public class Global {
-
     0 => static int part;
     -1=> static int next_part;
     static int next_part_blink;
@@ -7,7 +6,10 @@ public class Global {
     4 => static int part_sync;
     4 => static int beats_pr_bar;
     
-    [0,0,0,0,0,0,0,0,0] @=> static int part_ids[];
+    [
+    -1,-1,-1,-1,
+    -1,-1,-1,-1,
+    -1,-1,-1,-1] @=> static int track_ids[];
     
     0::ms => static dur osc_init_time;
     
@@ -43,7 +45,9 @@ public class Global {
     spork ~ osc_pulser();
     
     .005::ms => now;
-    Machine.add(part_name(part) + ".ck") => part_ids[part];
+    for(0=>int i; i<track_ids.size(); i++){
+        add(i,part,".ck") => track_ids[i];
+    }
 
 
     // -----------------------------------------------------
@@ -86,6 +90,11 @@ public class Global {
         return labels[18 + part_nb];
     }
     
+    private static string track_name(int track_nb){
+        track_nb % track_ids.size() => track_nb;
+        return labels[6 + track_nb];
+    }
+    
     private static void next_part_blinker(){
         while(true){
             !next_part_blink => next_part_blink;
@@ -96,28 +105,28 @@ public class Global {
         }
     }
 
+    private static int add(int track_nb, int part_nb,string ending){
+        track_name(track_nb) => string track;
+        part_name(part_nb) => string part;
+        if((part != "") && (track != "")){
+            return Machine.add(track + "_" + part + ending);
+        }
+    }
+    
     private static void part_switcher(){
         int id;
         while(true){
             Time.early_wait(part_sync);
             if(next_part != -1){
-                Machine.add(part_name(next_part) + ".ck") => id;
-                if(id != 0){
-                    Machine.remove(part_ids[part]);
-                    -1 => part_ids[part];
-                    Machine.add(part_name(part) + "_.ck");
-                    <<<"id:" + id>>>;
-                    id => part_ids[next_part];
-                    next_part => part;
-                    -1 => next_part;
-                    //osc_send_part();
+                for(0=>int i; i< track_ids.size(); i++){
+                    add(i,next_part,".ck") => id;
+                    Machine.remove(track_ids[i]);
+                    -1 => track_ids[i];
+                    add(i,part,"_.ck");
+                    id => track_ids[i];
                 }
-                else {
-                    -1 => next_part;
-                    //osc_send_part();
-                    
-                    
-                }
+                next_part => part;
+                -1 => next_part;
             }
         }
     }
