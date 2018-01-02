@@ -1,0 +1,18 @@
+diff -Naur ../chuck-1.3.5.2/src/rtmidi.cpp ./src/rtmidi.cpp
+--- ../chuck-1.3.5.2/src/rtmidi.cpp	2015-10-21 11:04:45.000000000 +0200
++++ ./src/rtmidi.cpp	2018-01-02 15:36:51.639660217 +0100
+@@ -1418,12 +1418,13 @@
+   snd_seq_ev_set_direct(&ev);
+   for ( unsigned int i=0; i<nBytes; i++ ) data->buffer[i] = message->at(i);
+   result = snd_midi_event_encode( data->coder, data->buffer, (long)nBytes, &ev );
++  /*
+   if ( result < (int)nBytes ) {
+     errorString_ = "RtMidiOut::sendMessage: event parsing error!";
+     error( RtError::WARNING );
+     return;
+   }
+-
++  */
+   // Send the event.
+   result = snd_seq_event_output(data->seq, &ev);
+   if ( result < 0 ) {

@@ -5,6 +5,9 @@ Live environment written in ChucK
 * Sound generating handled in eurorack (through cv.ocd)
 * Interfacing handled by TouchOSC
 
+## Prerequisites
+You need to patch you chuck for Luck to work, see folder "patches"
+
 ## Usage
 A project is the equivalent of a "song" or a "track" and consists of:
 * 4 monophonic melodic channels
