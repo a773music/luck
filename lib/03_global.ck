@@ -49,24 +49,30 @@ public class Global {
     // -----------------------------------------------------
     // mutes
     // -----------------------------------------------------
+    public static void mute(int ch_tr, int state){
+        state => mutes[ch_tr%mutes.size()];
+    }
+
+    public static void mute(int ch_tr[], int state){
+        for(0=>int i; i<ch_tr.size(); i++){
+            mute(ch_tr[i], state);
+        }
+    }
+
     public static void mute(int ch_tr){
-        1 => mutes[ch_tr%mutes.size()];
+        mute(ch_tr,1);
     }
 
     public static void mute(int ch_tr[]){
-        for(0=>int i; i<ch_tr.size(); i++){
-            1 => mutes[ch_tr[i]%mutes.size()];
-        }
+        mute(ch_tr, 1);
     }
 
     public static void unmute(int ch_tr){
-        0 => mutes[ch_tr%mutes.size()];
+        mute(ch_tr,0);
     }
 
     public static void unmute(int ch_tr[]){
-        for(0=>int i; i<ch_tr.size(); i++){
-            0 => mutes[ch_tr[i]%mutes.size()];
-        }
+        mute(ch_tr,0);
     }
 
 
@@ -196,7 +202,7 @@ public class Global {
     */
     
     public static void _osc_pulse(int step){
-        <<<"inside _osc_pulse, step:" + step>>>;
+        //<<<"inside _osc_pulse, step:" + step>>>;
         ((step % beats_pr_bar) % 9) + 1 => step;
         osc_send("/page1/pulse"+step,1,osc_init_time);
         osc_send("/page1/pulse"+last_step,0,osc_init_time);
@@ -304,31 +310,79 @@ public class Global {
         
         while(true){
             string address;
+            int handled;
             float value;
             oin => now;
             int pressed_part;
             while(oin.recv(msg)){
+                false => handled;
                 msg.address => address;
                 msg.getFloat(0) => value;
-                <<<address + "   " + value>>>;
-                for(1=>int i; i<=9; i++){
-                    if(address == "/page1/part"+i){
-                        i - 1 => pressed_part;
-                        if(part != pressed_part){
-                            pressed_part => next_part;
-                            <<<pressed_part>>>;
+                if(!handled){
+                    for(1=>int i; i<=9; i++){
+                        if(address == "/page1/part"+i){
+                            i - 1 => pressed_part;
+                            if(part != pressed_part){
+                                pressed_part => next_part;
+                                <<<pressed_part>>>;
+                            }
+                            //osc_send_part();
+                            //1::ms => now;
+                            true => handled;
                         }
-                        osc_send_part();
-                        1::ms => now;
+                    }
+                    
+                }
+                if(!handled){
+                    for(1=>int i; i<=6; i++){
+                        if(address == "/page1/global"+i){
+                            value => globals[i-1];
+                            true => handled;
+                        }
+                    }
+                    
+                }
+                if(!handled){
+                    for(1=>int i; i<=4; i++){
+                        if(address == "/page1/faderCh"+i){
+                            value => ind[i-1];
+                            true => handled;
+                        }
+                    }
+                    
+                }
+                if(!handled){
+                    for(1=>int i; i<=8; i++){
+                        if(address == "/page1/faderTr"+i){
+                            value => ind[i+3];
+                            true => handled;
+                        }
                     }
                 }
                 
+                if(!handled){
+                    for(1=>int i; i<=4; i++){
+                        if(address == "/page1/muteCh"+i){
+                            value$int => mutes[i-1];
+                            true => handled;
+                        }
+                    }
+                    
+                }
+                if(!handled){
+                    for(1=>int i; i<=8; i++){
+                        if(address == "/page1/muteTr"+i){
+                            value$int => mutes[i+3];
+                            true => handled;
+                        }
+                    }
+                    
+                }
+                if(!handled){
+                    <<<"unhandled: " + address + "   " + value>>>;
+                }
             }
         }
-        
-        
-        
-        
     }
 }
 
