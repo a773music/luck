@@ -1,10 +1,11 @@
 public class Global {
     0 => static int part;
     -1=> static int next_part;
+    -1 => static int part_id;
     static int next_part_blink;
     0 => static int last_step;
-    4 => static int part_sync;
-    4 => static int beats_pr_bar;
+    8 => static int part_sync;
+    8 => static int beats_pr_bar;
     
     [
     -1,-1,-1,-1,
@@ -13,17 +14,21 @@ public class Global {
     
     0::ms => static dur osc_init_time;
     
+    
     [
-    "global1","global2","global3",
-    "global4","global5","global6",
+    // labels for global sliders
+    "","","",
+    "","","",
 
-    "ch1","ch2","ch3","ch4",
-    "tr1","tr2","tr3","tr4",
-    "tr5","tr6","tr7","tr8",
+    // labels for channels
+    "","","","",
+    "","","","",
+    "","","","",
 
-    "part1","part2","part3",
-    "part4","part5","part6",
-    "part7","part8","part9"
+    // labels for parts
+    "","","",
+    "","","",
+    "","",""
     ] @=> static string labels[];
 
     
@@ -48,7 +53,21 @@ public class Global {
     for(0=>int i; i<track_ids.size(); i++){
         add(i,part,".ck") => track_ids[i];
     }
+    add(part,".ck") => part_id;
 
+
+    // -----------------------------------------------------
+    // helpers
+    // -----------------------------------------------------
+    public static int file_exists(string file_name){
+        FileIO file;
+        file.open(file_name, FileIO.READ) => int exists;
+        file.close();
+        //<<<"test:" + test>>>;
+        return exists;
+    }
+
+    
 
     // -----------------------------------------------------
     // mutes
@@ -61,22 +80,27 @@ public class Global {
         for(0=>int i; i<ch_tr.size(); i++){
             mute(ch_tr[i], state);
         }
+        osc_send_mutes();
     }
 
     public static void mute(int ch_tr){
         mute(ch_tr,1);
+        osc_send_mutes();
     }
 
     public static void mute(int ch_tr[]){
         mute(ch_tr, 1);
+        osc_send_mutes();
     }
 
     public static void unmute(int ch_tr){
         mute(ch_tr,0);
+        osc_send_mutes();
     }
 
     public static void unmute(int ch_tr[]){
         mute(ch_tr,0);
+        osc_send_mutes();
     }
 
 
@@ -105,11 +129,24 @@ public class Global {
         }
     }
 
-    private static int add(int track_nb, int part_nb,string ending){
+    private static int add(int track_nb, int part_nb, string ending){
         track_name(track_nb) => string track;
         part_name(part_nb) => string part;
-        if((part != "") && (track != "")){
-            return Machine.add(track + "_" + part + ending);
+
+        track + "_" + part + ending => string file_name;
+
+        //if((part != "") && (track != "") && file_exists(file_name)){
+        if(file_exists(file_name)){
+            return Machine.add(file_name);
+        }
+    }
+    
+    private static int add(int part_nb, string ending){
+        part_name(part_nb) => string part;
+        part + ending => string file_name;
+        //if((part != "") && (file_exists(file_name))){
+        if((file_exists(file_name))){
+            return Machine.add(file_name);
         }
     }
     
@@ -118,13 +155,23 @@ public class Global {
         while(true){
             Time.early_wait(part_sync);
             if(next_part != -1){
+                <<<part_name(next_part) + " ---------------">>>;
                 for(0=>int i; i< track_ids.size(); i++){
                     add(i,next_part,".ck") => id;
-                    Machine.remove(track_ids[i]);
-                    -1 => track_ids[i];
+                    if(track_ids[i]){
+                        Machine.remove(track_ids[i]);
+                    }
+                    //-1 => track_ids[i];
                     add(i,part,"_.ck");
                     id => track_ids[i];
                 }
+                add(next_part,".ck") => id;
+                if(part_id){
+                    Machine.remove(part_id);
+                }
+                add(part,"_.ck");
+                id => part_id;
+
                 next_part => part;
                 -1 => next_part;
             }
@@ -190,6 +237,7 @@ public class Global {
     public static void osc_send_part(){
         for(1=>int i; i<=9; i++){
             if((i-1 != next_part) &&(i-1 != part)){
+                //if(part != next_part){
                 osc_send("/page1/part"+i,0,osc_init_time);
             }
         }
@@ -211,7 +259,6 @@ public class Global {
     */
     
     public static void _osc_pulse(int step){
-        //<<<"inside _osc_pulse, step:" + step>>>;
         ((step % beats_pr_bar) % 9) + 1 => step;
         osc_send("/page1/pulse"+step,1,osc_init_time);
         osc_send("/page1/pulse"+last_step,0,osc_init_time);
@@ -223,6 +270,7 @@ public class Global {
         osc_note(channel, 1);
         50::ms =>now;
         osc_note(channel, 0);
+        10::ms => now;
     }
         
     public static void osc_note(int channel, int state){
@@ -236,9 +284,10 @@ public class Global {
     }
 
     public static void osc_trigger(int trigger){
-        osc_trigger(trigger, 1);
-        50::ms => now;
-        osc_trigger(trigger, 0);
+        spork ~ _osc_trigger(trigger, 1);
+        200::ms => now;
+        spork ~ _osc_trigger(trigger, 0);
+        100::ms => now;
     }
     public static void osc_trigger(int trigger, int state){
         spork ~ _osc_trigger(trigger, state);
@@ -246,6 +295,7 @@ public class Global {
 
     
     public static void _osc_trigger(int trigger, int state){
+        return;
         (trigger % 8) + 1 => trigger;
         osc_send("/page1/activityTr"+trigger, state);
     }
@@ -331,10 +381,10 @@ public class Global {
                     for(1=>int i; i<=9; i++){
                         if(address == "/page1/part"+i){
                             i - 1 => pressed_part;
-                            if(part != pressed_part){
+                            //if(part != pressed_part ){
                                 pressed_part => next_part;
-                                <<<pressed_part>>>;
-                            }
+                                //<<<pressed_part>>>;
+                            //}
                             //osc_send_part();
                             //1::ms => now;
                             true => handled;

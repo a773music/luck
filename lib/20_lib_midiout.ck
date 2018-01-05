@@ -181,6 +181,7 @@ public class Midi {
 
     
     public static void note_on(float note, int channel){
+        if(Global.mutes[channel%4]) return;
         Math.max(0,note)$int => int my_note;
         //(channel + 1)% 4 => channel;
         if(notes_on[channel] >= 0){
@@ -204,29 +205,39 @@ public class Midi {
     
     
     public static void _trigger(int trigger_nb, dur length){
+        _trigger(trigger_nb, length, 1);
+    }
+    
+    public static void _trigger(int trigger_nb, dur length, int allow_mute){
         trigger_nb % 8 => trigger_nb;
+        if(allow_mute && Global.mutes[trigger_nb + 4]){
+            return;
+        }
+        
         if(triggers_on[trigger_nb] == 1){
             send_note(trigger_nb + 36, 0, 9);
             Global.osc_trigger(trigger_nb,0);
             1::ms=>now;
         }
         send_note(trigger_nb + 36, 127, 9);
-        Global.osc_trigger(trigger_nb,1);
         1 => triggers_on[trigger_nb];
         length => now;
 
         if(triggers_on[trigger_nb] == 1){
             send_note(trigger_nb + 36, 0, 9);
-            Global.osc_trigger(trigger_nb,0);
         }
         0 => triggers_on[trigger_nb];
     }
 
     public static void trigger(int trigger_nb){
-        trigger(trigger_nb, 10::ms);
+        spork ~ trigger(trigger_nb, 10::ms);
     }
+    
     public static void trigger(int trigger_nb, dur length){
         spork ~ _trigger(trigger_nb, length);
+        spork ~ Global.osc_trigger(trigger_nb);
+        200::ms => now; // let live
+        
     }
 
     
