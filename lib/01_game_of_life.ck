@@ -108,6 +108,16 @@ public class game_of_life {
     }
     
     public void evolve(){
+        /*
+        For a space that is 'populated':
+        Each cell with one or no neighbors dies, as if by solitude.
+        Each cell with four or more neighbors dies, as if by overpopulation.
+        Each cell with two or three neighbors survives.
+
+        For a space that is 'empty' or 'unpopulated'
+        Each cell with three neighbors becomes populated. 
+        */
+
         int nb_neighbours;
         
         // create + init tmp
@@ -132,25 +142,23 @@ public class game_of_life {
                 count_neighbours(x,y) => nb_neighbours;
                 if(get(x,y)){
                     if(nb_neighbours == 2 || nb_neighbours == 3){
-                        set(x,y,1);
+                        set(x,y,1); // survives
                     }
                     else {
-                        set(x,y,0);
+                        set(x,y,0); // dies, solitude or overpopulation
                     }
                         
                 }
                 else {
                     if(nb_neighbours == 3){
-                        set(x,y,1);
+                        set(x,y,1); // populate
                     }
                     else {
-                        set(x,y,0);
+                        set(x,y,0); // stay empty
                     }
                 }
-                    
-}
+            }
         }
-        
     }
 }
 
