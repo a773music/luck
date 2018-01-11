@@ -184,8 +184,10 @@ public class Global {
     // osc
     // -----------------------------------------------------
     public static void osc_send(string address, float value){
-        "192.168.0.5" => string osc_remote_host;
+        //"192.168.0.5" => string osc_remote_host;
         //"192.168.43.124" => string osc_remote_host;
+        "169.254.220.212"  => string osc_remote_host;
+        
         9000 => int osc_remote_port;
 
         OscOut xmit;
@@ -201,8 +203,9 @@ public class Global {
     }
 
     public static void osc_send(string address, string value){
-        "192.168.0.5" => string osc_remote_host;
+        //"192.168.0.5" => string osc_remote_host;
         //"192.168.43.124" => string osc_remote_host;
+        "169.254.220.212"  => string osc_remote_host;
         9000 => int osc_remote_port;
 
         OscOut xmit;
