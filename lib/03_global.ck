@@ -24,21 +24,25 @@ public class Global {
     0::ms => static dur osc_init_time;
     
     
-    [
     // labels for global sliders
+    [
     "","","",
-    "","","",
+    "","",""
+    ] @=> static string sliders[];
 
-    // labels for channels
+    // labels for track aka track names
+    [
     "","","","",
     "","","","",
-    "","","","",
+    "","","",""
+    ] @=> static string tracks[];
 
     // labels for parts
+    [
     "","","",
     "","","",
     "","",""
-    ] @=> static string labels[];
+    ] @=> static string parts[];
 
     
     [.5, .5, .5, .5,
@@ -130,6 +134,21 @@ public class Global {
     // -----------------------------------------------------
     // mutes
     // -----------------------------------------------------
+
+    public static void mute(string name, int state){
+        <<<"muting with name: " + name>>>;
+        <<<Array.search(name, tracks)%mutes.size()>>>;
+        state => mutes[Array.search(name, tracks)%mutes.size()];
+    }
+
+
+    public static void mute(string names[], int state){
+        for(0=>int i; i<names.size(); i++){
+            mute(names[i], state);
+        }
+    }
+
+
     public static void mute(int ch_tr, int state){
         state => mutes[ch_tr%mutes.size()];
     }
@@ -168,13 +187,13 @@ public class Global {
     // -----------------------------------------------------
 
     private static string part_name(int part_nb){
-        part_nb % 9 => part_nb;
-        return labels[18 + part_nb];
+        part_nb % parts.size() => part_nb;
+        return parts[part_nb];
     }
     
     private static string track_name(int track_nb){
-        track_nb % track_ids.size() => track_nb;
-        return labels[6 + track_nb];
+        track_nb % tracks.size() => track_nb;
+        return tracks[track_nb];
     }
     
     private static void next_part_blinker(){
@@ -280,18 +299,17 @@ public class Global {
     
     public static void osc_send_labels(){
         for(1=>int i; i<=6; i++){
-            osc_send("/page1/labelGl"+i,labels[i-1],osc_init_time);
+            osc_send("/page1/labelGl"+i,sliders[i-1],osc_init_time);
         }
-        for(1=>int i; i<=4; i++){
-            osc_send("/page1/labelCh"+i,labels[i+5],osc_init_time);
+        for(1=>int i; i<=nb_melodic_channels; i++){
+            osc_send("/page1/labelCh"+i,tracks[i-1],osc_init_time);
         }
-        for(1=>int i; i<=8; i++){
-            osc_send("/page1/labelTr"+i,labels[i+9],osc_init_time);
+        for(1=>int i; i<=tracks.size()-nb_melodic_channels; i++){
+            osc_send("/page1/labelTr"+i,tracks[i-1+nb_melodic_channels],osc_init_time);
         }
-        for(1=>int i; i<=9; i++){
-            osc_send("/page1/labelPart"+i,labels[i+17],osc_init_time);
+        for(1=>int i; i<=parts.size(); i++){
+            osc_send("/page1/labelPart"+i,parts[i-1],osc_init_time);
         }
-
 }
     
 
@@ -417,6 +435,7 @@ public class Global {
         osc_clear_activity();
         20::ms => now;
         osc_send_mutes();
+        20::ms => now;
     }
 
     
