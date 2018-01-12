@@ -105,6 +105,7 @@ public class Array {
         }
     }
 
+    /*
     public int search(float needle){
         for(0=>int i; i<size(); i++){
             if(elements[i] == needle){
@@ -113,14 +114,14 @@ public class Array {
         }
         return -1;
     }
-
+    
     public int contains(float needle){
         if(search(needle) == -1){
             return false;
         }
         return true;
     }
-
+    */
 
     public void replace(int id, float value){
         1000000 * size() => int safety_offset;
@@ -286,7 +287,18 @@ public class Array {
 
 
     
-    public static int array_search(float needle, float haystack[]){
+    public static int search(string needle, string haystack[]){
+        //<<<"in search, string version">>>;
+        for(0=>int i; i<haystack.size(); i++){
+            if(haystack[i] == needle){
+                //<<<"gonna go with " + i>>>;
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int search(float needle, float haystack[]){
         for(0=>int i; i<haystack.size(); i++){
             if(haystack[i] == needle){
                 return i;
@@ -296,7 +308,7 @@ public class Array {
     }
 
     public static int in_array(float needle, float haystack[]){
-        if(array_search(needle, haystack) == -1){
+        if(search(needle, haystack) == -1){
             return false;
         }
         return true;
