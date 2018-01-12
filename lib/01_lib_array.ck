@@ -174,6 +174,7 @@ public class Array {
         return elements.size();
     }
 
+    /*
     public void print(){
         <<<"--- Array content ---">>>;
         for(0=>int i; i<size(); i++){
@@ -181,10 +182,14 @@ public class Array {
         }
         <<<"---------------------">>>;
     }
+    */
 
-
-    public float random(){
-        return elements[Std.rand2(0,elements.size()-1)];
+    public static float random(float source[]){
+        return source[Std.rand2(0,source.size()-1)];
+    }
+    
+    public static float random(int source[]){
+        return source[Std.rand2(0,source.size()-1)]$float;
     }
     
 
@@ -212,6 +217,8 @@ public class Array {
         }
         return best;
     }
+
+
 
     
     public float next_in_scale(float current, int direction){
@@ -274,8 +281,69 @@ public class Array {
         // FIXME: needs reworking to OOP
         return array_merge(a1,a1);
     }
-    
+
+    // ----------------------------------------
+    // helpers that work on standard chuck stuff
+    // ----------------------------------------
+
+    public static int array_search(float needle, float haystack[]){
+        for(0=>int i; i<haystack.size(); i++){
+            if(haystack[i] == needle){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int in_array(float needle, float haystack[]){
+        if(array_search(needle, haystack) == -1){
+            return false;
+        }
+        return true;
+    }
+
+
+    public static void fill(int a, int b, int fill_me[]){
+        <<<"inside fill int">>>;
+        for(0=>int i; i<fill_me.size(); i++){
+            Std.rand2(a,b) => fill_me[i];
+        }
+    }
+
+    public static void fill(float fill_me[]){
+        for(0=>int i; i<fill_me.size(); i++){
+            Std.rand2f(0,1) => fill_me[i];
+        }
+    }
+
+    public static void fill(float a, float b, float fill_me[]){
+        <<<"inside fill float">>>;
+        for(0=>int i; i<fill_me.size(); i++){
+            Std.rand2f(a,b) => fill_me[i];
+        }
+    }
+
+    public static void print(int print_me[]){
+        <<<"printing int array">>>;
+        string str;
+        for(0=>int i; i<print_me.size(); i++){
+            str + print_me[i] + " " => str;
+        }
+        <<<str>>>;
+    }
+
+    public static void print(float print_me[]){
+        <<<"printing float array">>>;
+        string str;
+        for(0=>int i; i<print_me.size(); i++){
+            str + print_me[i] + " " => str;
+        }
+        <<<str>>>;
+    }
+
+
 }
 
+Array dummy;
 
 10::week => now;
