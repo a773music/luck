@@ -199,28 +199,6 @@ public class Array {
     // old functions
     // ----------------------------------------
 
-    public float quantize(float input){
-        // FIXME: needs tesing
-        128 => float best_distance;
-        float this_distance;
-        0 => float best;
-        float try;
-        for(0=>int i; i<11; i++){
-            for(0=>int j; j<size(); j++){
-                (elements[j]+i*12) => try;
-                Std.fabs(try - input) => this_distance;
-                if(this_distance < best_distance){
-                    this_distance => best_distance;
-                    try => best;
-                }
-            }
-        }
-        return best;
-    }
-
-
-
-    
     public float next_in_scale(float current, int direction){
         // FIXME: needs tesing
         float try;
@@ -286,6 +264,28 @@ public class Array {
     // helpers that work on standard chuck stuff
     // ----------------------------------------
 
+    public static float quantize(float input, float scale[]){
+        // FIXME: back to helper needs tesing
+        128 => float best_distance;
+        float this_distance;
+        0 => float best;
+        float try;
+        for(0=>int i; i<11; i++){
+            for(0=>int j; j<scale.size(); j++){
+                (scale[j]+i*12) => try;
+                Std.fabs(try - input) => this_distance;
+                if(this_distance < best_distance){
+                    this_distance => best_distance;
+                    try => best;
+                }
+            }
+        }
+        return best;
+    }
+
+
+
+    
     public static int array_search(float needle, float haystack[]){
         for(0=>int i; i<haystack.size(); i++){
             if(haystack[i] == needle){
@@ -304,7 +304,6 @@ public class Array {
 
 
     public static void fill(int a, int b, int fill_me[]){
-        <<<"inside fill int">>>;
         for(0=>int i; i<fill_me.size(); i++){
             Std.rand2(a,b) => fill_me[i];
         }
@@ -317,7 +316,6 @@ public class Array {
     }
 
     public static void fill(float a, float b, float fill_me[]){
-        <<<"inside fill float">>>;
         for(0=>int i; i<fill_me.size(); i++){
             Std.rand2f(a,b) => fill_me[i];
         }
