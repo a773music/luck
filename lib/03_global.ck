@@ -13,6 +13,8 @@ public class Global {
     -1 => static int part_id;
     static int next_part_blink;
     0 => static int last_step;
+
+    4 => static int nb_melodic_channels;
     
     [
     -1,-1,-1,-1,
@@ -100,8 +102,27 @@ public class Global {
     
 
     
+    // -----------------------------------------------------
+    // setters and getters
+    // -----------------------------------------------------
+    public static float ind_tr(int i){
+        return ind[i + nb_melodic_channels];
+    }
 
+    public static float ind_tr(int i, float value){
+        value => ind[i + nb_melodic_channels];
+        return 1.;
+    }
 
+    public static float ind_ch(int i){
+        return ind[i%nb_melodic_channels];
+    }
+
+    public static float ind_ch(int i, float value){
+        value => ind[i%nb_melodic_channels];
+        return 1.;
+    }
+        
 
 
 
@@ -360,10 +381,10 @@ public class Global {
     
     public static void osc_send_faders(){
         for(1=>int i; i<=4; i++){
-            osc_send("/page1/faderCh"+i,ind[i-1],osc_init_time);
+            osc_send("/page1/faderCh"+i,ind_ch(i-1),osc_init_time);
         }
         for(1=>int i; i<=8; i++){
-            osc_send("/page1/faderTr"+i,ind[i+3],osc_init_time);
+            osc_send("/page1/faderTr"+i,ind_tr(i-1),osc_init_time);
         }
     }
     
@@ -444,7 +465,7 @@ public class Global {
                 if(!handled){
                     for(1=>int i; i<=4; i++){
                         if(address == "/page1/faderCh"+i){
-                            value => ind[i-1];
+                            ind_ch(i-1, value);
                             true => handled;
                         }
                     }
@@ -453,7 +474,7 @@ public class Global {
                 if(!handled){
                     for(1=>int i; i<=8; i++){
                         if(address == "/page1/faderTr"+i){
-                            value => ind[i+3];
+                            ind_tr(i-1, value);
                             true => handled;
                         }
                     }
