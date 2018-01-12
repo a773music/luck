@@ -1,6 +1,10 @@
 public class Time {
     60 => static float tempo;
     
+    public static void wait(){
+        wait(1.);
+    }
+    
     public static void wait(float beats){
         beat(beats) => dur T;
         T - (now % T) => now;
@@ -12,6 +16,10 @@ public class Time {
         (T - (now % T)) => now;
     }
 
+
+    public static int sub(){
+        return sub(1.);
+    }
 
     public static int sub(float beats){
         return (now / beat(beats)) $ int;
