@@ -1,11 +1,18 @@
 public class Global {
+    8 => static int part_sync;
+    8 => static int beats_pr_bar;
+
+
+    ["192.168.0.5"] @=> static string osc_remote_host[];
+
+    [[0.]] @=> static float scales[][];
+    scales.clear();
+    
     0 => static int part;
     -1=> static int next_part;
     -1 => static int part_id;
     static int next_part_blink;
     0 => static int last_step;
-    8 => static int part_sync;
-    8 => static int beats_pr_bar;
     
     [
     -1,-1,-1,-1,
@@ -67,8 +74,38 @@ public class Global {
         return exists;
     }
 
+
+    public static float quantize(float input, string scale){
+        if(scales[scale] == null){
+            <<<"no scale named '" + scale + "'">>>;
+            return -1.;
+        }
+
+        128 => float best_distance;
+        float this_distance;
+        0 => float best;
+        float try;
+        for(0=>int i; i<11; i++){
+            for(0=>int j; j<scales[scale].cap(); j++){
+                scales[scale][j]+i*12 => try;
+                Std.fabs(try - input) => this_distance;
+                if(this_distance < best_distance){
+                    this_distance => best_distance;
+                    try => best;
+                }
+            }
+        }
+        return best;
+    }
     
 
+    
+
+
+
+
+
+    
     // -----------------------------------------------------
     // mutes
     // -----------------------------------------------------
@@ -186,12 +223,12 @@ public class Global {
     public static void osc_send(string address, float value){
         //"192.168.0.5" => string osc_remote_host;
         //"192.168.43.124" => string osc_remote_host;
-        "169.254.220.212"  => string osc_remote_host;
+        //"169.254.220.212"  => string osc_remote_host;
         
         9000 => int osc_remote_port;
 
         OscOut xmit;
-        xmit.dest(osc_remote_host, osc_remote_port);
+        xmit.dest(osc_remote_host[0], osc_remote_port);
         xmit.start(address);
         value => xmit.add;
         xmit.send();
@@ -205,11 +242,11 @@ public class Global {
     public static void osc_send(string address, string value){
         //"192.168.0.5" => string osc_remote_host;
         //"192.168.43.124" => string osc_remote_host;
-        "169.254.220.212"  => string osc_remote_host;
+        //"169.254.220.212"  =>
         9000 => int osc_remote_port;
 
         OscOut xmit;
-        xmit.dest(osc_remote_host, osc_remote_port);
+        xmit.dest(osc_remote_host[0], osc_remote_port);
         xmit.start(address);
         value => xmit.add;
         xmit.send();
@@ -449,5 +486,8 @@ public class Global {
 }
 
 Global dummy;
+
+//"192.168.0.5" => string osc_remote_host;
+
 
 1::week => now;
