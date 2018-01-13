@@ -4,6 +4,7 @@ public class Global {
 
 
     ["192.168.0.5"] @=> static string osc_remote_host[];
+    9000 @=> static int osc_remote_port;
 
     [[0.]] @=> static float scales[][];
     scales.clear();
@@ -13,15 +14,16 @@ public class Global {
     -1 => static int part_id;
     static int next_part_blink;
     0 => static int last_step;
-
-    4 => static int nb_melodic_channels;
+    24 => static int nb_pulses;
+    
+    8 => static int nb_melodic_channels;
     
     [
-    -1,-1,-1,-1,
-    -1,-1,-1,-1,
-    -1,-1,-1,-1] @=> static int track_ids[];
+    -1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1] @=> static int track_ids[];
     
-    0::ms => static dur osc_init_time;
+    10::ms => static dur osc_init_time;
     
     
     // labels for global sliders
@@ -32,9 +34,9 @@ public class Global {
 
     // labels for track aka track names
     [
-    "","","","",
-    "","","","",
-    "","","",""
+    "","","","","","","","",
+    "","","","","","","","",
+    "","","","","","","",""
     ] @=> static string tracks[];
 
     // labels for parts
@@ -45,15 +47,16 @@ public class Global {
     ] @=> static string parts[];
 
     
-    [.5, .5, .5, .5,
-    .5, .5, .5, .5,
-    .5, .5, .5, .5] @=> static float ind[];
+    [
+    .5, .5, .5, .5, .5, .5, .5, .5,
+    .5, .5, .5, .5, .5, .5, .5, .5,
+    .5, .5, .5, .5, .5, .5, .5, .5] @=> static float ind[];
 
     [.5, .5, .5, .5, .5, .5] @=> static float globals[];
     
-    [0,0,0,0,
-    0,0,0,0,
-    0,0,0,0] @=> static int mutes[];
+    [0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0] @=> static int mutes[];
 
     
     spork ~ osc_listen();
@@ -109,15 +112,18 @@ public class Global {
     // -----------------------------------------------------
     // setters and getters
     // -----------------------------------------------------
-    public static float ind_tr(int i){
-        return ind[i + nb_melodic_channels];
+    /*
+    public static float ind(int i){
+        return ind[i];
     }
 
-    public static float ind_tr(int i, float value){
-        value => ind[i + nb_melodic_channels];
+    public static float ind(int i, float value){
+        value => ind[i];
         return 1.;
     }
-
+    */
+    
+    /*
     public static float ind_ch(int i){
         return ind[i%nb_melodic_channels];
     }
@@ -126,7 +132,7 @@ public class Global {
         value => ind[i%nb_melodic_channels];
         return 1.;
     }
-        
+      */  
 
 
 
@@ -199,7 +205,7 @@ public class Global {
     private static void next_part_blinker(){
         while(true){
             !next_part_blink => next_part_blink;
-            osc_send("/page1/part"+(next_part + 1) ,next_part_blink,osc_init_time);
+            osc_send("/page1/part"+(next_part) ,next_part_blink,osc_init_time);
             1::ms => now;
             osc_send_part();
             499::ms => now;
@@ -261,12 +267,6 @@ public class Global {
     // osc
     // -----------------------------------------------------
     public static void osc_send(string address, float value){
-        //"192.168.0.5" => string osc_remote_host;
-        //"192.168.43.124" => string osc_remote_host;
-        //"169.254.220.212"  => string osc_remote_host;
-        
-        9000 => int osc_remote_port;
-
         OscOut xmit;
         xmit.dest(osc_remote_host[0], osc_remote_port);
         xmit.start(address);
@@ -280,11 +280,6 @@ public class Global {
     }
 
     public static void osc_send(string address, string value){
-        //"192.168.0.5" => string osc_remote_host;
-        //"192.168.43.124" => string osc_remote_host;
-        //"169.254.220.212"  =>
-        9000 => int osc_remote_port;
-
         OscOut xmit;
         xmit.dest(osc_remote_host[0], osc_remote_port);
         xmit.start(address);
@@ -298,29 +293,25 @@ public class Global {
     }
     
     public static void osc_send_labels(){
-        for(1=>int i; i<=6; i++){
-            osc_send("/page1/labelGl"+i,sliders[i-1],osc_init_time);
+        for(0=>int i; i<sliders.size(); i++){
+            osc_send("/page1/labelGl"+i,sliders[i],osc_init_time);
         }
-        for(1=>int i; i<=nb_melodic_channels; i++){
-            osc_send("/page1/labelCh"+i,tracks[i-1],osc_init_time);
+        for(0=>int i; i<tracks.size(); i++){
+            osc_send("/page1/labelTr"+i,tracks[i],osc_init_time);
         }
-        for(1=>int i; i<=tracks.size()-nb_melodic_channels; i++){
-            osc_send("/page1/labelTr"+i,tracks[i-1+nb_melodic_channels],osc_init_time);
-        }
-        for(1=>int i; i<=parts.size(); i++){
-            osc_send("/page1/labelPart"+i,parts[i-1],osc_init_time);
+        for(0=>int i; i<parts.size(); i++){
+            osc_send("/page1/labelPart"+i,parts[i],osc_init_time);
         }
 }
     
 
     public static void osc_send_part(){
-        for(1=>int i; i<=9; i++){
-            if((i-1 != next_part) &&(i-1 != part)){
-                //if(part != next_part){
+        for(0=>int i; i<parts.size(); i++){
+            if((i != next_part) &&(i != part)){
                 osc_send("/page1/part"+i,0,osc_init_time);
             }
         }
-        osc_send("/page1/part"+(part+1),1,osc_init_time);
+        osc_send("/page1/part"+part,1,osc_init_time);
     }
 
 
@@ -331,93 +322,70 @@ public class Global {
         }
     }
     
-    /*
-    public static void osc_pulse(int step){
-        spork ~ _osc_pulse(step);
-    }
-    */
-    
     public static void _osc_pulse(int step){
-        ((step % beats_pr_bar) % 9) + 1 => step;
+        ((step % beats_pr_bar) % 9)=> step;
         osc_send("/page1/pulse"+step,1,osc_init_time);
         osc_send("/page1/pulse"+last_step,0,osc_init_time);
         step => last_step;
     }
 
 
-    public static void osc_note(int channel){
-        osc_note(channel, 1);
+    public static void osc_note(int channel, int state){
+        osc_note(channel, state);
         50::ms =>now;
+    }        
+    public static void osc_note(int channel){
         osc_note(channel, 0);
-        10::ms => now;
+        osc_note(channel, 1);
+
     }
-        
+
+    /*
     public static void osc_note(int channel, int state){
         spork ~ _osc_note(channel, state);
     }
-
+    */
     
-    public static void _osc_note(int channel, int state){
-        (channel % 4) + 1 => channel;
-        osc_send("/page1/activityCh"+channel, state);
-    }
-
-    public static void osc_trigger(int trigger){
-        spork ~ _osc_trigger(trigger, 1);
+    public static void osc_activity(int track, int state){
+        (track % tracks.size()) => track;
+        osc_send("/page1/activityTr"+track, state);
         200::ms => now;
-        spork ~ _osc_trigger(trigger, 0);
-        100::ms => now;
-    }
-    public static void osc_trigger(int trigger, int state){
-        spork ~ _osc_trigger(trigger, state);
     }
 
-    
-    public static void _osc_trigger(int trigger, int state){
-        return;
-        (trigger % 8) + 1 => trigger;
-        osc_send("/page1/activityTr"+trigger, state);
+    public static void osc_activity(int track){
+        osc_activity(track, 1);
+        osc_activity(track, 0);
     }
 
 
     public static void osc_clear_activity(){
-        for(1=>int i; i<=4; i++){
-            osc_send("/page1/activityCh"+i, 0,osc_init_time);
-        }
-        for(1=>int i; i<=8; i++){
+        for(0=>int i; i<tracks.size(); i++){
             osc_send("/page1/activityTr"+i, 0,osc_init_time);
         }
-        
     }
     
     public static void osc_clear_pulse(){
-        for(1=>int i; i<=9; i++){
+        for(1=>int i; i<nb_pulses; i++){
             osc_send("/page1/pulse"+i,0, osc_init_time);
         }
         
     }
     
     public static void osc_send_faders(){
-        for(1=>int i; i<=4; i++){
-            osc_send("/page1/faderCh"+i,ind_ch(i-1),osc_init_time);
-        }
-        for(1=>int i; i<=8; i++){
-            osc_send("/page1/faderTr"+i,ind_tr(i-1),osc_init_time);
+        for(0=>int i; i<tracks.size(); i++){
+            osc_send("/page1/fader"+i,ind[0],osc_init_time);
         }
     }
     
     public static void osc_send_globals(){
-        for(1=>int i; i<=6; i++){
-            osc_send("/page1/global"+i,globals[i-1],osc_init_time);
+        for(0=>int i; i<globals.size(); i++){
+            osc_send("/page1/global"+i,globals[i],osc_init_time);
         }
     }
 
     public static void osc_send_mutes(){
-        for(1=>int i; i<=4; i++){
-            osc_send("/page1/muteCh"+i,mutes[i-1],osc_init_time);
-        }
-        for(1=>int i; i<=8; i++){
-            osc_send("/page1/muteTr"+i,mutes[i+3],osc_init_time);
+        for(0=>int i; i<mutes.size(); i++){
+            osc_send("/page1/mute"+i,mutes[i],osc_init_time);
         }
     }        
         
@@ -458,9 +426,9 @@ public class Global {
                 msg.address => address;
                 msg.getFloat(0) => value;
                 if(!handled){
-                    for(1=>int i; i<=9; i++){
+                    for(0=>int i; i<parts.size(); i++){
                         if(address == "/page1/part"+i){
-                            i - 1 => pressed_part;
+                            i => pressed_part;
                             //if(part != pressed_part ){
                                 pressed_part => next_part;
                                 //<<<pressed_part>>>;
@@ -473,50 +441,34 @@ public class Global {
                     
                 }
                 if(!handled){
-                    for(1=>int i; i<=6; i++){
+                    for(0=>int i; i<globals.size(); i++){
                         if(address == "/page1/global"+i){
-                            value => globals[i-1];
+                            value => globals[i];
                             true => handled;
                         }
                     }
                     
                 }
                 if(!handled){
-                    for(1=>int i; i<=4; i++){
-                        if(address == "/page1/faderCh"+i){
-                            ind_ch(i-1, value);
+                    for(0=>int i; i<=tracks.size(); i++){
+                        if(address == "/page1/fader"+i){
+                            value => ind[i];
                             true => handled;
                         }
                     }
                     
-                }
-                if(!handled){
-                    for(1=>int i; i<=8; i++){
-                        if(address == "/page1/faderTr"+i){
-                            ind_tr(i-1, value);
-                            true => handled;
-                        }
-                    }
                 }
                 
                 if(!handled){
-                    for(1=>int i; i<=4; i++){
+                    for(0=>int i; i<mutes.size(); i++){
                         if(address == "/page1/muteCh"+i){
-                            value$int => mutes[i-1];
+                            value$int => mutes[i];
                             true => handled;
                         }
                     }
                     
                 }
-                if(!handled){
-                    for(1=>int i; i<=8; i++){
-                        if(address == "/page1/muteTr"+i){
-                            value$int => mutes[i+3];
-                            true => handled;
-                        }
-                    }
-                    
-                }
+
                 if(!handled){
                     <<<"unhandled: " + address + "   " + value>>>;
                 }
@@ -526,8 +478,6 @@ public class Global {
 }
 
 Global dummy;
-
-//"192.168.0.5" => string osc_remote_host;
 
 
 1::week => now;

@@ -209,14 +209,14 @@ public class Midi {
     }
     
     public static void _trigger(int trigger_nb, dur length, int allow_mute){
-        trigger_nb % 8 => trigger_nb;
-        if(allow_mute && Global.mutes[trigger_nb + 4]){
+        trigger_nb % (Global.tracks.size() - Global.nb_melodic_channels)  => trigger_nb;
+        if(allow_mute && Global.mutes[trigger_nb + Global.nb_melodic_channels]){
             return;
         }
         
         if(triggers_on[trigger_nb] == 1){
             send_note(trigger_nb + 36, 0, 9);
-            Global.osc_trigger(trigger_nb,0);
+            Global.osc_activity(trigger_nb + Global.nb_melodic_channels,0);
             1::ms=>now;
         }
         send_note(trigger_nb + 36, 127, 9);
@@ -235,7 +235,7 @@ public class Midi {
     
     public static void trigger(int trigger_nb, dur length){
         spork ~ _trigger(trigger_nb, length);
-        spork ~ Global.osc_trigger(trigger_nb);
+        spork ~ Global.osc_activity(trigger_nb + Global.nb_melodic_channels);
         200::ms => now; // let live
         
     }
