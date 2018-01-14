@@ -4,10 +4,17 @@ public class Midi {
     -1 => static int default_device; // FIXME 1 or 5, must autoset
     1 => static int default_channel;
 
-    [0,0,0,0, 0,0,0,0] @=> static int triggers_on[];
-    [-1,-1,-1,-1] @=> static int notes_on[];
+    [
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0
+    ] @=> static int triggers_on[];
+    [
+    -1,-1,-1,-1,
+    -1,-1,-1,-1
+    ] @=> static int notes_on[];
 
-    
+    7 => static int auto_trigger_nb;
+    1/24. => static float auto_trigger_wait;
 
     static int keyboardInput;
     
@@ -21,6 +28,8 @@ public class Midi {
     if(default_device >= 0){
         spork ~ midi_clock(midiport);
     }
+
+    spork ~ auto_trigger();
     
     public static int deviceName2Id(string portName){
         int success;
@@ -109,6 +118,17 @@ public class Midi {
     }
     
 
+    public static void auto_trigger(){
+        while(true){
+            if(auto_trigger_nb > -1){
+                spork ~ Midi.trigger(auto_trigger_nb + Global.nb_melodic_channels,10::ms,0);
+            }
+            Time.wait(auto_trigger_wait);
+        }
+    }
+    
+
+    
     public static void midi_clock_start(MidiOut port){
         if(debug){
             <<<"sending midi clock start">>>;
@@ -148,15 +168,6 @@ public class Midi {
         send_2bytes(bcrMidiOut, 12, channel, program);
     }
     */
-
-    /*
-    public static void micronAllNotesOff(){
-        for(0 => int i; i< 128; i++){
-            micronNote(i,0);
-        }
-    }
-    */
-
     
     public static void send_note(int note, int velocity, int channel){
         channel + 1 => channel;
@@ -173,69 +184,103 @@ public class Midi {
     }
 
 
-    public static void note(float note, int channel, dur length){
-        note_on(note, channel);
+    public static void note(float note, string channel_name, dur length){
+        note_on(note, channel_name);
         length => now;
-        note_off(channel);
+        note_off(channel_name);
     }
 
     
-    public static void note_on(float note, int channel){
-        if(Global.mutes[channel%4]) return;
-        Math.max(0,note)$int => int my_note;
-        //(channel + 1)% 4 => channel;
-        if(notes_on[channel] >= 0){
-            note_off(channel);
-            1::ms => now;
-        }
-        send_note(my_note, 127, channel);
-        Global.osc_note(channel,1);
-        my_note => notes_on[channel];
-    }
-
-    public static void note_off(int channel){
-        //(channel + 1)% 4 => channel;
-        if(notes_on[channel]>=0){
-            send_note(notes_on[channel], 0, channel);
-            Global.osc_note(channel,0);
-            -1 => notes_on[channel];
-        }
-    }
-
-    
-    
-    public static void _trigger(int trigger_nb, dur length){
-        _trigger(trigger_nb, length, 1);
-    }
-    
-    public static void _trigger(int trigger_nb, dur length, int allow_mute){
-        trigger_nb % (Global.tracks.size() - Global.nb_melodic_channels)  => trigger_nb;
-        if(allow_mute && Global.mutes[trigger_nb + Global.nb_melodic_channels]){
+    public static void note_on(float note, string channel_name){
+        Array.search(channel_name,Global.tracks) => int ch;
+        if(ch<0){
+            <<<"Midi.note_on: no fader with name '" +channel_name+"'">>>;
             return;
         }
         
-        if(triggers_on[trigger_nb] == 1){
-            send_note(trigger_nb + 36, 0, 9);
-            Global.osc_activity(trigger_nb + Global.nb_melodic_channels,0);
+        if(Global.mutes[ch]) return;
+        spork ~ Global.osc_activity(ch);
+        Math.max(0,note)$int => int my_note;
+        if(notes_on[ch] >= 0){
+            note_off(channel_name);
+            1::ms => now;
+        }
+        send_note(my_note, 127, ch);
+        //Global.osc_activity(ch);
+        my_note => notes_on[ch];
+    }
+
+    public static void note_off(string channel_name){
+        Array.search(channel_name,Global.tracks) => int ch;
+        if(ch<0){
+            <<<"Midi.note_on: no fader with name '" +channel_name+"'">>>;
+            return;
+        }
+        
+        if(notes_on[ch]>=0){
+            send_note(notes_on[ch], 0, ch);
+            //Global.osc_activity(ch,0);
+            -1 => notes_on[ch];
+        }
+    }
+
+    
+    public static void _trigger(string trigger_name, dur length, int allow_mute){
+        Array.search(trigger_name,Global.tracks) => int track;
+        if(track<0){
+            <<<"Midi._trigger: no track with name '" +trigger_name+"'">>>;
+            return;
+        }
+
+        _trigger(track, length, allow_mute);
+    } 
+    
+    public static void _trigger(int track, dur length, int allow_mute){
+        // actual trigger function
+        track % Global.tracks.size() => track;
+        track - Global.nb_melodic_channels => int trigger;
+        if(allow_mute && Global.mutes[track]){
+            return;
+        }
+
+        if(allow_mute) spork ~ Global.osc_activity(track);
+        //<<<"a, track:" + track + ",trigger:" + trigger>>>;
+        if(triggers_on[trigger] == 1){
+            send_note(trigger + 36, 0, 9);
+            //Global.osc_activity(trigger_name,0);
             1::ms=>now;
         }
-        send_note(trigger_nb + 36, 127, 9);
-        1 => triggers_on[trigger_nb];
+        send_note(trigger + 36, 127, 9);
+        //Global.osc_activity(trigger_name,1);
+        1 => triggers_on[trigger];
         length => now;
 
-        if(triggers_on[trigger_nb] == 1){
-            send_note(trigger_nb + 36, 0, 9);
+        if(triggers_on[trigger] == 1){
+            send_note(trigger + 36, 0, 9);
+            //Global.osc_activity(trigger_name,0);
+            
         }
-        0 => triggers_on[trigger_nb];
+        0 => triggers_on[trigger];
     }
 
-    public static void trigger(int trigger_nb){
-        spork ~ trigger(trigger_nb, 10::ms);
+    public static void trigger(string trigger_name){
+        trigger(trigger_name, 10::ms);
+        200::ms => now; // let live
     }
     
-    public static void trigger(int trigger_nb, dur length){
-        spork ~ _trigger(trigger_nb, length);
-        spork ~ Global.osc_activity(trigger_nb + Global.nb_melodic_channels);
+    public static void trigger(string trigger_name, dur length){
+        trigger(trigger_name, length, 1);
+        200::ms => now; // let live
+    }
+    
+    public static void trigger(string trigger_name, dur length, int allow_mute){
+        _trigger(trigger_name, length, allow_mute);
+        200::ms => now; // let live
+        
+    }
+
+    public static void trigger(int track, dur length, int allow_mute){
+        _trigger(track, length, allow_mute);
         200::ms => now; // let live
         
     }

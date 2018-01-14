@@ -23,7 +23,7 @@ public class Global {
     -1,-1,-1,-1,-1,-1,-1,-1,
     -1,-1,-1,-1,-1,-1,-1,-1] @=> static int track_ids[];
     
-    10::ms => static dur osc_init_time;
+    1::ms => static dur osc_init_time;
     
     
     // labels for global sliders
@@ -50,7 +50,7 @@ public class Global {
     [
     .5, .5, .5, .5, .5, .5, .5, .5,
     .5, .5, .5, .5, .5, .5, .5, .5,
-    .5, .5, .5, .5, .5, .5, .5, .5] @=> static float ind[];
+    .5, .5, .5, .5, .5, .5, .5, .5] @=> static float faders[];
 
     [.5, .5, .5, .5, .5, .5] @=> static float globals[];
     
@@ -112,29 +112,36 @@ public class Global {
     // -----------------------------------------------------
     // setters and getters
     // -----------------------------------------------------
-    /*
-    public static float ind(int i){
-        return ind[i];
-    }
-
-    public static float ind(int i, float value){
-        value => ind[i];
-        return 1.;
-    }
-    */
+    public static void set_fader(string name, float value){
+        Array.search(name,tracks) => int i;
+        if(i<0){
+            <<<"Global.set_fader: no fader with name '" +name+"'">>>;
+        }
+        else {
+            value => faders[i];
+        }
+    }        
     
-    /*
-    public static float ind_ch(int i){
-        return ind[i%nb_melodic_channels];
+    public static float get_fader(string name){
+        -1. => float res;
+        Array.search(name,tracks) => int i;
+        if(i<0){
+            <<<"Global.get_fader: no fader with name '" +name+"'">>>;
+        }
+        else {
+            faders[i] => res;
+        }
+        return res;
     }
 
-    public static float ind_ch(int i, float value){
-        value => ind[i%nb_melodic_channels];
-        return 1.;
+
+    public static void name_track(int track_nb, string track_name){
+        track_name => tracks[track_nb % tracks.size()];
     }
-      */  
 
-
+    public static void name_part(int part_nb, string part_name){
+        part_name => parts[part_nb % parts.size()];
+    }
 
     
     // -----------------------------------------------------
@@ -142,8 +149,8 @@ public class Global {
     // -----------------------------------------------------
 
     public static void mute(string name, int state){
-        <<<"muting with name: " + name>>>;
-        <<<Array.search(name, tracks)%mutes.size()>>>;
+        //<<<"muting with name: " + name>>>;
+        //<<<Array.search(name, tracks)%mutes.size()>>>;
         state => mutes[Array.search(name, tracks)%mutes.size()];
     }
 
@@ -323,44 +330,25 @@ public class Global {
     }
     
     public static void _osc_pulse(int step){
-        ((step % beats_pr_bar) % 9)=> step;
+        ((step % beats_pr_bar) % nb_pulses)=> step;
         osc_send("/page1/pulse"+step,1,osc_init_time);
         osc_send("/page1/pulse"+last_step,0,osc_init_time);
         step => last_step;
     }
 
 
-    public static void osc_note(int channel, int state){
-        osc_note(channel, state);
-        50::ms =>now;
-    }        
-    public static void osc_note(int channel){
-        osc_note(channel, 0);
-        osc_note(channel, 1);
-
-    }
-
-    /*
-    public static void osc_note(int channel, int state){
-        spork ~ _osc_note(channel, state);
-    }
-    */
-    
-    public static void osc_activity(int track, int state){
-        (track % tracks.size()) => track;
-        osc_send("/page1/activityTr"+track, state);
-        200::ms => now;
-    }
-
     public static void osc_activity(int track){
-        osc_activity(track, 1);
-        osc_activity(track, 0);
+        //<<<"osc activity, track:" + track>>>;
+        (track % tracks.size()) => track;
+        osc_send("/page1/activity"+track, 1);
+        200::ms => now;
+        osc_send("/page1/activity"+track, 0);
+        200::ms;
     }
-
 
     public static void osc_clear_activity(){
         for(0=>int i; i<tracks.size(); i++){
-            osc_send("/page1/activityTr"+i, 0,osc_init_time);
+            osc_send("/page1/activity"+i, 0,osc_init_time);
         }
     }
     
@@ -373,7 +361,7 @@ public class Global {
     
     public static void osc_send_faders(){
         for(0=>int i; i<tracks.size(); i++){
-            osc_send("/page1/fader"+i,ind[0],osc_init_time);
+            osc_send("/page1/fader"+i,faders[i],osc_init_time);
         }
     }
     
@@ -452,7 +440,7 @@ public class Global {
                 if(!handled){
                     for(0=>int i; i<=tracks.size(); i++){
                         if(address == "/page1/fader"+i){
-                            value => ind[i];
+                            value => faders[i];
                             true => handled;
                         }
                     }
@@ -461,7 +449,7 @@ public class Global {
                 
                 if(!handled){
                     for(0=>int i; i<mutes.size(); i++){
-                        if(address == "/page1/muteCh"+i){
+                        if(address == "/page1/mute"+i){
                             value$int => mutes[i];
                             true => handled;
                         }

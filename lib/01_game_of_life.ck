@@ -73,6 +73,7 @@ public class game_of_life {
     }
 
     public int get(int x, int y){
+        // TODO: automatically wrap out of bounds x and y to grid
         // check if requested position is out of bounds
         if(x >= get_size_x() || y >= get_size_y()){
             <<<"in get: x ("+x+") or y("+y+") is out of bounds...">>>;
@@ -160,6 +161,15 @@ public class game_of_life {
             }
         }
     }
+
+
+    public void get_row(int row){
+        //TODO: get row as array
+    }    
+    
+    public void get_collumn(int collumn){
+        //TODO: get collumn as array
+    }    
 }
 
 /*
