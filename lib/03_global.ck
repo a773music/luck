@@ -106,8 +106,18 @@ public class Global {
         }
         return best;
     }
-    
 
+    public static string path2track(string path){
+        //<<<"in path2track">>>;
+        path.erase(0,path.rfind("/") +1);
+        path.substring(0,path.find(".")) => path;
+        path.rfind("_") => int underscore;
+        if(underscore < 0){
+            return "";
+        }
+        return path.substring(0,underscore);
+    }
+    
     
     // -----------------------------------------------------
     // setters and getters
@@ -224,6 +234,8 @@ public class Global {
         part_name(part_nb) => string part;
 
         track + "_" + part + ending => string file_name;
+        //file_name + ":10" => file_name;
+        
 
         //if((part != "") && (track != "") && file_exists(file_name)){
         if(file_exists(file_name)){

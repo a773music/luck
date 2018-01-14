@@ -192,6 +192,7 @@ public class Midi {
 
     
     public static void note_on(float note, string channel_name){
+        if(!channel_name.length()) return;
         Array.search(channel_name,Global.tracks) => int ch;
         if(ch<0){
             <<<"Midi.note_on: no fader with name '" +channel_name+"'">>>;
@@ -211,6 +212,7 @@ public class Midi {
     }
 
     public static void note_off(string channel_name){
+        if(!channel_name.length()) return;
         Array.search(channel_name,Global.tracks) => int ch;
         if(ch<0){
             <<<"Midi.note_on: no fader with name '" +channel_name+"'">>>;
@@ -226,6 +228,7 @@ public class Midi {
 
     
     public static void _trigger(string trigger_name, dur length, int allow_mute){
+        if(!trigger_name.length()) return;
         Array.search(trigger_name,Global.tracks) => int track;
         if(track<0){
             <<<"Midi._trigger: no track with name '" +trigger_name+"'">>>;
