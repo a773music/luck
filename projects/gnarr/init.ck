@@ -1,35 +1,22 @@
 150 => Time.tempo;
 
-[
-// labels for global sliders
-"activity","length","",
-"","","",
+10 => Global.part_sync;
+10 => Global.beats_pr_bar;
+
+["activity","length","", "","",""] @=> Global.sliders;
 
 // labels for channels
-"bass","rings","","",
-"bd","glitch","pico_el","hh",
-"dinkys","","","",
+["bass","rings","","","","","","",
+"bd","glitch","pico_el","hh","dinkys","","","",
+"","","","","","","",""] @=> Global.tracks;
 
 // labels for parts
-"a","b","",
+["a","b","",
 "","","",
-"","",""
-] @=> Global.labels;
+"","",""] @=> Global.parts;
 
-// individual sliders
-[.0, .5, .5, .5,
-.5, .5, .5, .5,
-.5, .5, .5, .5] @=> Global.ind;
+Global.set_fader("bass", .0);
 
 [.05, .05, .5, .5, .5, .5] @=> Global.globals;
 
-
-spork ~ pulse();
-
-fun void pulse(){
-    while(true){
-        spork ~ Midi._trigger(7,10::ms,0);
-        Time.wait(1/24.);
-    }
-}
 1::week => now;

@@ -1,7 +1,6 @@
-1 => int rings_channel;
+Global.path2track(me.path()) => string ch;
 
-Array notes;
-notes.append([12,17,19,20]);
+[12,17,19,20] @=> int notes[];
 float note;
 
 int sub;
@@ -9,14 +8,12 @@ int div;
 5 => int octave;
 
 while(true){
-    (32  / (Global.ind[rings_channel] + 1))$int => div;
-    notes.random() => note;
+    (32  / (Global.get_fader(ch) + 1))$int => div;
+    Array.random(notes) => note;
     Time.sub(.5)% div => sub;
-    //<<<"in rings, div:" + div>>>;
     if(sub < 7 * Global.globals[0] * Std.rand2f(.6,1.4)){
-        //<<<"note on rings:" + note>>>;
         1::ms + 190::ms* Global.globals[1] => dur length;
-        Midi.note(notes.random() + 12*octave, rings_channel ,length);
+        spork ~ Midi.note(Array.random(notes) + 12*octave, ch ,length);
     }
     Time.wait(.5);
 }

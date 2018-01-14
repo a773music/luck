@@ -1,4 +1,6 @@
+Global.path2track(me.path()) => string ch;
+
 while(true){
-    Midi.trigger(3);
+    Midi.trigger(ch);
     Time.wait(1.);
 }

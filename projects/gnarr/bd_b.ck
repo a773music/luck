@@ -1,7 +1,8 @@
+Global.path2track(me.path()) => string ch;
+
 while(true){
     if(Global.globals[0]>Std.rand2f(0,1)){
-    //if(Global.globals[0]>.6){
-        Midi.trigger(0);
+        spork ~ Midi.trigger(ch);
     }
     Time.wait(1.);
 }

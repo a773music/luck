@@ -1,8 +1,9 @@
-0 => int ch;
+Global.path2track(me.path()) => string ch;
+
 
 [5,8,10] @=> int notes[];
 [.5, .25, -2, .25, .25, .5, -4.5,-3] @=> float lengths[];
-3 => int octave;
+2 => int octave;
 
 int i;
 while(true){
@@ -14,7 +15,7 @@ while(true){
     }
     else {
         Midi.note_off(ch);
-        Time.wait(-1*length * Math.round((.2 + (1-Global.ind[ch])) * 3));
+        Time.wait(-1*length * Math.round((.2 + (1-Global.get_fader(ch))) * 3));
     }
     i++;
 }

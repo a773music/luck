@@ -1,3 +1,5 @@
+Global.path2track(me.path()) => string ch;
+
 [.99,0,0,.9,  0,.5,0,.1] @=> float probs[];
 
 fun void ratchet(int nb_ratchets, dur start_time, dur end_time){
@@ -5,7 +7,7 @@ fun void ratchet(int nb_ratchets, dur start_time, dur end_time){
         (start_time * (nb_ratchets - i)/nb_ratchets) + (end_time * i / nb_ratchets)=> dur ratchet_time;
         
         //<<<start_time, end_time,ratchet_time>>>;
-        Midi.trigger(0);
+        spork ~ Midi.trigger(ch);
         ratchet_time => now;
         
     }
@@ -19,7 +21,7 @@ while(true){
             spork ~ ratchet(Std.rand2(2,4),20::ms, Std.rand2(120,60)*1::ms);
         }
         else {
-            Midi.trigger(0);
+            Midi.trigger(ch);
         }
     }
     Time.wait(.5);
