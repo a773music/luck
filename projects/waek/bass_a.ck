@@ -1,4 +1,4 @@
-"bass" => string ch;
+Global.path2track(me.path()) => string ch;
 
 3 => int octave;
 [-2.,-5,1,2,3,7] @=> float notes[];

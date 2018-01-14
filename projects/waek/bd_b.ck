@@ -1,5 +1,4 @@
-//<<<"bd b">>>;
-0 => int ch;
+Global.path2track(me.path()) => string ch;
 
 [0.] @=> float notes[];
 notes.clear();
@@ -16,7 +15,7 @@ while(true){
     if(Time.sub(.25)%40 == 0 || Time.sub(.5)%20 == random_middle){
         for(0 => int i; i<notes.size(); i++){
             if(notes[i] > 1-Global.globals[0]){
-                Midi.trigger(ch);
+                spork ~ Midi.trigger(ch);
             }
             Time.wait(.25);
         }

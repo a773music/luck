@@ -1,4 +1,4 @@
-"rings" => string ch;
+Global.path2track(me.path()) => string ch;
 
 int i;
 5 => int octave;

@@ -1,4 +1,4 @@
-"click" => string ch;
+Global.path2track(me.path()) => string ch;
 
 [1., 1, .5, .25, .125] @=> float len[];
 

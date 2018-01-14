@@ -1,5 +1,4 @@
-//<<<"bd a">>>;
-"bd" => string track;
+Global.path2track(me.path()) => string ch;
 
 [0.] @=> float notes[];
 notes.clear();
@@ -14,11 +13,7 @@ while(true){
     if(Time.sub(.25)%40 == 0){
         for(0 => int i; i<notes.size(); i++){
             if(notes[i] >= Std.rand2f(.9,1.1)-Global.globals[0]){
-                //<<<"before bd">>>;
-                //<<<now>>>;
-                spork ~ Midi.trigger(track);
-                //<<<"after bd">>>;
-                //<<<now>>>;
+                spork ~ Midi.trigger(ch);
             }
             Time.wait(.25);
         }

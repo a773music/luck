@@ -1,4 +1,4 @@
-"hh" => string ch;
+Global.path2track(me.path()) => string ch;
 
 while(true){
     if(Time.sub()%2){
