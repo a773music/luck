@@ -6,7 +6,7 @@
 ["activity","length","", "","",""] @=> Global.sliders;
 
 // labels for channels
-["bass","rings","","","","","","",
+["bass","","","rings","","","","",
 "bd","glitch","pico_el","hh","dinkys","","","",
 "","","","","","","",""] @=> Global.tracks;
 
