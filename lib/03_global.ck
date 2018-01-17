@@ -8,8 +8,8 @@ public class Global {
     9000 @=> static int osc_remote_port;
 
     1 => static int all_wait; // should we wait?
-    0 => static int all_mute_trig_waiting; // are we waiting for mute trig?
-    0 => static int all_mute_mel_waiting; // are we waiting for mute mel?
+    0 => static int all_mute_trig_waiting; // 1=mute -1=unmute
+    0 => static int all_mute_mel_waiting; // 1=mute -1=unmute
 
     [[0.]] @=> static float scales[][];
     scales.clear();
@@ -30,7 +30,7 @@ public class Global {
     -1,-1,-1,-1,-1,-1,-1,-1,
     -1,-1,-1,-1,-1,-1,-1,-1] @=> static int track_ids[];
     
-    1::ms => static dur osc_init_time;
+    2::ms => static dur osc_init_time;
     
     
     // labels for global sliders
@@ -69,6 +69,7 @@ public class Global {
     spork ~ osc_listen();
     spork ~ next_part_blinker();
     spork ~ part_switcher();
+    spork ~ wait_muter();
     spork ~ osc_send_all();
     spork ~ osc_pulser();
     
@@ -213,27 +214,27 @@ public class Global {
         for(0=>int i; i<ch_tr.size(); i++){
             mute(ch_tr[i], state);
         }
-        osc_send_mutes();
+        spork ~ osc_send_mutes();
     }
 
     public static void mute(int ch_tr){
         mute(ch_tr,1);
-        osc_send_mutes();
+        spork ~ osc_send_mutes();
     }
 
     public static void mute(int ch_tr[]){
         mute(ch_tr, 1);
-        osc_send_mutes();
+        spork ~ osc_send_mutes();
     }
 
     public static void unmute(int ch_tr){
         mute(ch_tr,0);
-        osc_send_mutes();
+        spork ~ osc_send_mutes();
     }
 
     public static void unmute(int ch_tr[]){
         mute(ch_tr,0);
-        osc_send_mutes();
+        spork ~ osc_send_mutes();
     }
 
 
@@ -309,6 +310,54 @@ public class Global {
 
                 next_part => part;
                 -1 => next_part;
+            }
+        }
+    }
+
+    private static void wait_muter(){
+        int change;
+        while(true){
+            Time.early_wait(part_sync);
+            if(all_mute_trig_waiting == 1){
+                1 => change;
+                for(nb_melodic_channels => int i; i<tracks.size(); i++){
+                    1 => mutes[i];
+                }
+                0 => all_mute_trig_waiting;
+                //spork ~ osc_send_mutes();
+                //20::ms => now;
+            }
+            if(all_mute_trig_waiting == -1){
+                1 => change;
+                for(nb_melodic_channels => int i; i<tracks.size(); i++){
+                    0 => mutes[i];
+                }
+                0 => all_mute_trig_waiting;
+                //spork ~ osc_send_mutes();
+                //20::ms => now;
+            }
+            if(all_mute_mel_waiting == 1){
+                1 => change;
+                for(0 => int i; i<nb_melodic_channels; i++){
+                    1 => mutes[i];
+                }
+                0 => all_mute_mel_waiting;
+                //spork ~ osc_send_mutes();
+                //20::ms => now;
+            }
+            if(all_mute_mel_waiting == -1){
+                1 => change;
+                for(0 => int i; i<nb_melodic_channels; i++){
+                    0 => mutes[i];
+                }
+                0 => all_mute_mel_waiting;
+                //spork ~ osc_send_mutes();
+                //20::ms => now;
+                
+            }
+            if(change){
+                spork ~ osc_send_mutes();
+                0 => change;
             }
         }
     }
@@ -510,7 +559,7 @@ public class Global {
                 if(!handled){
                     if(address == "/page1/allMuteTrig"){
                         if(all_wait){
-                            <<<"waiting...">>>;
+                            1 => all_mute_trig_waiting;
                         }
                         else {
                             for(nb_melodic_channels => int i; i<tracks.size(); i++){
@@ -525,7 +574,7 @@ public class Global {
                 if(!handled){
                     if(address == "/page1/allUnmuteTrig"){
                         if(all_wait){
-                            <<<"waiting...">>>;
+                            -1 => all_mute_trig_waiting;
                         }
                         else {
                             for(nb_melodic_channels => int i; i<tracks.size(); i++){
@@ -540,7 +589,7 @@ public class Global {
                 if(!handled){
                     if(address == "/page1/allMuteMel"){
                         if(all_wait){
-                            <<<"waiting...">>>;
+                            1 => all_mute_mel_waiting;
                         }
                         else {
                             for(0 => int i; i<nb_melodic_channels; i++){
@@ -555,7 +604,7 @@ public class Global {
                 if(!handled){
                     if(address == "/page1/allUnmuteMel"){
                         if(all_wait){
-                            <<<"waiting...">>>;
+                            -1 => all_mute_mel_waiting;
                         }
                         else {
                             for(0 => int i; i<nb_melodic_channels; i++){
