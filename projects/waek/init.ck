@@ -6,13 +6,13 @@
 ["activity","range","","","",""] @=> Global.sliders;
 
 // labels for channels
-["bass","","","rings","","","","",
+["bass","mel","","rings","","","","",
 "bd","sd","click","hh","pico","","","",
 "","","","","","","",""] @=> Global.tracks;
 
 // labels for parts
-["a","b","c",
-"","","",
+["a","b","mel_a",
+"c","","",
 "","",""
 ] @=> Global.parts;
 

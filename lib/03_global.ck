@@ -3,8 +3,13 @@ public class Global {
     8 => static int beats_pr_bar;
 
 
-    ["192.168.0.5"] @=> static string osc_remote_host[];
+    //["192.168.0.5"] @=> static string osc_remote_host[]; // home
+    ["192.168.0.9"] @=> static string osc_remote_host[]; // britt home
     9000 @=> static int osc_remote_port;
+
+    1 => static int all_wait; // should we wait?
+    0 => static int all_mute_trig_waiting; // are we waiting for mute trig?
+    0 => static int all_mute_mel_waiting; // are we waiting for mute mel?
 
     [[0.]] @=> static float scales[][];
     scales.clear();
@@ -15,6 +20,8 @@ public class Global {
     static int next_part_blink;
     0 => static int last_step;
     24 => static int nb_pulses;
+    ["-"] @=> static string filename_joiner[];
+
     
     8 => static int nb_melodic_channels;
     
@@ -111,7 +118,7 @@ public class Global {
         //<<<"in path2track">>>;
         path.erase(0,path.rfind("/") +1);
         path.substring(0,path.find(".")) => path;
-        path.rfind("_") => int underscore;
+        path.rfind(filename_joiner[0]) => int underscore;
         if(underscore < 0){
             return "";
         }
@@ -144,6 +151,30 @@ public class Global {
         return res;
     }
 
+    public static float get_slider(string name){
+        .5 => float res;
+        Array.search(name,sliders) => int i;
+        if(i<0){
+            <<<"Global.get_slider: no fader with name '" +name+"'">>>;
+        }
+        else {
+            globals[i] => res;
+        }
+        return res;
+    }
+
+    public static void set_slider(string name, float value){
+        Array.search(name,sliders) => int i;
+        if(i<0){
+            <<<"Global.set_slider: no fader with name '" +name+"'">>>;
+            return;
+        }
+        else {
+            value => globals[i];
+        }
+    }
+
+    
 
     public static void name_track(int track_nb, string track_name){
         track_name => tracks[track_nb % tracks.size()];
@@ -153,6 +184,8 @@ public class Global {
         part_name => parts[part_nb % parts.size()];
     }
 
+
+    
     
     // -----------------------------------------------------
     // mutes
@@ -233,7 +266,7 @@ public class Global {
         track_name(track_nb) => string track;
         part_name(part_nb) => string part;
 
-        track + "_" + part + ending => string file_name;
+        track + filename_joiner[0] + part + ending => string file_name;
         //file_name + ":10" => file_name;
         
 
@@ -389,6 +422,11 @@ public class Global {
         }
     }        
         
+    public static void osc_send_misc(){
+        osc_send("/page1/allMuteWait",all_wait,osc_init_time);
+
+    }        
+        
     public static void osc_send_all(){
         osc_clear_pulse();
         20::ms => now;
@@ -403,6 +441,8 @@ public class Global {
         osc_clear_activity();
         20::ms => now;
         osc_send_mutes();
+        20::ms => now;
+        osc_send_misc();
         20::ms => now;
     }
 
@@ -458,7 +498,6 @@ public class Global {
                     }
                     
                 }
-                
                 if(!handled){
                     for(0=>int i; i<mutes.size(); i++){
                         if(address == "/page1/mute"+i){
@@ -468,7 +507,73 @@ public class Global {
                     }
                     
                 }
-
+                if(!handled){
+                    if(address == "/page1/allMuteTrig"){
+                        if(all_wait){
+                            <<<"waiting...">>>;
+                        }
+                        else {
+                            for(nb_melodic_channels => int i; i<tracks.size(); i++){
+                                1 => mutes[i];
+                            }
+                            osc_send_mutes();
+                        }
+                        true => handled;
+                    }
+                    
+                }
+                if(!handled){
+                    if(address == "/page1/allUnmuteTrig"){
+                        if(all_wait){
+                            <<<"waiting...">>>;
+                        }
+                        else {
+                            for(nb_melodic_channels => int i; i<tracks.size(); i++){
+                                0 => mutes[i];
+                            }
+                            osc_send_mutes();
+                        }
+                        true => handled;
+                    }
+                    
+                }
+                if(!handled){
+                    if(address == "/page1/allMuteMel"){
+                        if(all_wait){
+                            <<<"waiting...">>>;
+                        }
+                        else {
+                            for(0 => int i; i<nb_melodic_channels; i++){
+                                1 => mutes[i];
+                            }
+                            osc_send_mutes();
+                        }
+                        true => handled;
+                    }
+                    
+                }
+                if(!handled){
+                    if(address == "/page1/allUnmuteMel"){
+                        if(all_wait){
+                            <<<"waiting...">>>;
+                        }
+                        else {
+                            for(0 => int i; i<nb_melodic_channels; i++){
+                                0 => mutes[i];
+                            }
+                            osc_send_mutes();
+                        }
+                        true => handled;
+                    }
+                    
+                }
+                if(!handled){
+                    if(address == "/page1/allMuteWait"){
+                        value$int => all_wait;
+                        true => handled;
+                    }
+                    
+                }
                 if(!handled){
                     <<<"unhandled: " + address + "   " + value>>>;
                 }
