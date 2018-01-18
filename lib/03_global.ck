@@ -7,7 +7,7 @@ public class Global {
     ["192.168.0.9"] @=> static string osc_remote_host[]; // britt home
     9000 @=> static int osc_remote_port;
 
-    1 => static int all_wait; // should we wait?
+    0 => static int all_wait; // should we wait?
     0 => static int all_mute_trig_waiting; // 1=mute -1=unmute
     0 => static int all_mute_mel_waiting; // 1=mute -1=unmute
 
@@ -17,11 +17,10 @@ public class Global {
     0 => static int part;
     -1=> static int next_part;
     -1 => static int part_id;
-    static int next_part_blink;
+    //static int next_part_blink;
     0 => static int last_step;
     24 => static int nb_pulses;
     ["-"] @=> static string filename_joiner[];
-
     
     8 => static int nb_melodic_channels;
     
@@ -30,8 +29,9 @@ public class Global {
     -1,-1,-1,-1,-1,-1,-1,-1,
     -1,-1,-1,-1,-1,-1,-1,-1] @=> static int track_ids[];
     
-    2::ms => static dur osc_init_time;
-    
+    3::ms => static dur osc_init_time;
+    500::ms => static dur blink_time;
+    20::ms => static dur refresh_time;
     
     // labels for global sliders
     [
@@ -67,11 +67,12 @@ public class Global {
 
     
     spork ~ osc_listen();
-    spork ~ next_part_blinker();
+    spork ~ blinker();
     spork ~ part_switcher();
     spork ~ wait_muter();
     spork ~ osc_send_all();
     spork ~ osc_pulser();
+    spork ~ track_mute_refresh();
     
     .005::ms => now;
     for(0=>int i; i<track_ids.size(); i++){
@@ -253,13 +254,28 @@ public class Global {
         return tracks[track_nb];
     }
     
-    private static void next_part_blinker(){
+    private static void blinker(){
+        0 => int blink_on;        
         while(true){
-            !next_part_blink => next_part_blink;
-            osc_send("/page1/part"+(next_part) ,next_part_blink,osc_init_time);
+            !blink_on => blink_on;
+            osc_send("/page1/part"+(next_part), blink_on,osc_init_time);
+            if(all_mute_trig_waiting == 1){
+                osc_send("/page1/allMuteTrig", blink_on,osc_init_time);
+            }
+            if(all_mute_trig_waiting == -1){
+                osc_send("/page1/allUnmuteTrig", blink_on,osc_init_time);
+            }
+            if(all_mute_mel_waiting == 1){
+                osc_send("/page1/allMuteMel", blink_on,osc_init_time);
+            }
+            if(all_mute_mel_waiting == -1){
+                osc_send("/page1/allUnmuteMel", blink_on,osc_init_time);
+            }
+                
             1::ms => now;
-            osc_send_part();
-            499::ms => now;
+            spork ~ osc_send_part();
+            spork ~ osc_send_misc();
+            blink_time => now;
         }
     }
 
@@ -369,10 +385,12 @@ public class Global {
     // -----------------------------------------------------
     public static void osc_send(string address, float value){
         OscOut xmit;
+        //<<<"address:" + address + ", value:" + value>>>;
         xmit.dest(osc_remote_host[0], osc_remote_port);
         xmit.start(address);
         value => xmit.add;
         xmit.send();
+        1::ms => now;
     }
 
     public static void osc_send(string address, float value, dur rest_time){
@@ -473,9 +491,21 @@ public class Global {
         
     public static void osc_send_misc(){
         osc_send("/page1/allMuteWait",all_wait,osc_init_time);
+        osc_send("/page1/allMuteMel",0,osc_init_time);
+        osc_send("/page1/allMuteTrig",0,osc_init_time);
+        osc_send("/page1/allUnmuteMel",0,osc_init_time);
+        osc_send("/page1/allUnmuteTrig",0,osc_init_time);
 
     }        
-        
+
+    public static void track_mute_refresh(){
+        // FIXME: hack - some OSC seems to be lost...
+        while(true){
+            spork ~ osc_send_mutes();
+            refresh_time => now;
+        }
+    }
+    
     public static void osc_send_all(){
         osc_clear_pulse();
         20::ms => now;
