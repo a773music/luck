@@ -200,6 +200,7 @@ public class Midi {
         }
         
         if(Global.mutes[ch]) return;
+        //<<<"activity ch:" + ch>>>;
         spork ~ Global.osc_activity(ch);
         Math.max(0,note)$int => int my_note;
         if(notes_on[ch] >= 0){

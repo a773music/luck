@@ -31,7 +31,7 @@ public class Global {
     
     3::ms => static dur osc_init_time;
     500::ms => static dur blink_time;
-    20::ms => static dur refresh_time;
+    1::second => static dur refresh_time;
     
     // labels for global sliders
     [
@@ -450,6 +450,7 @@ public class Global {
 
 
     public static void osc_activity(int track){
+        return;
         //<<<"osc activity, track:" + track>>>;
         (track % tracks.size()) => track;
         osc_send("/page1/activity"+track, 1);
