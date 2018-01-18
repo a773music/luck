@@ -15,7 +15,7 @@
 "c","","",
 "","",""
 ] @=> Global.parts;
-
+0 => Global.part; // where to start
 
 [.1, .5, .5, .5, .5, .5 ] @=> Global.globals;
 
