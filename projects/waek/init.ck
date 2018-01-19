@@ -1,3 +1,4 @@
+// ms matrix preset: 1
 160 => Time.tempo;
 
 10 => Global.part_sync;
@@ -6,7 +7,7 @@
 ["activity","range","","","",""] @=> Global.sliders;
 
 // labels for channels
-["bass","mel","","rings","","","","",
+["bass","mel","rings","","","","","",
 "bd","sd","click","hh","pico","","","",
 "","","","","","","",""] @=> Global.tracks;
 
