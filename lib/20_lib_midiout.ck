@@ -14,7 +14,7 @@ public class Midi {
     ] @=> static int notes_on[];
 
     7 => static int auto_trigger_nb;
-    1/24. => static float auto_trigger_wait;
+    1/4. => static float auto_trigger_wait;
 
     static int keyboardInput;
     
