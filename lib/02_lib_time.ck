@@ -1,5 +1,7 @@
 public class Time {
     60 => static float tempo;
+
+    static int i;
     
     public static void wait(){
         wait(1.);
@@ -20,6 +22,7 @@ public class Time {
         }
         beat(beats) => dur T;
         (T - (now % T)) => now;
+        .00001::ms => now;
     }
 
 
@@ -41,7 +44,7 @@ public class Time {
     
     public static dur beat(float beats){
         if(beats == 0){
-            1 => beats;
+            1. => beats;
         }
         return 60::second / tempo * beats;
     }
