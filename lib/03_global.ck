@@ -3,8 +3,8 @@ public class Global {
     8 => static int beats_pr_bar;
 
 
-    //["192.168.0.5"] @=> static string osc_remote_host[]; // home
-    ["192.168.0.9"] @=> static string osc_remote_host[]; // britt home
+    ["192.168.0.5"] @=> static string osc_remote_host[]; // home
+    //["192.168.0.9"] @=> static string osc_remote_host[]; // britt home
     9000 @=> static int osc_remote_port;
 
     0 => static int all_wait; // should we wait?
@@ -287,8 +287,8 @@ public class Global {
         //file_name + ":10" => file_name;
         
 
-        //if((part != "") && (track != "") && file_exists(file_name)){
-        if(file_exists(file_name)){
+        if((part != "") && (track != "") && file_exists(file_name)){
+        //if(file_exists(file_name)){
             return Machine.add(file_name);
         }
     }
