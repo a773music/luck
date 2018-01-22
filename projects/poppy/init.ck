@@ -18,7 +18,7 @@
 "","",""
 ] @=> Global.parts;
 
-1 => Global.part; // start here
+0 => Global.part; // start here
 
 
 
