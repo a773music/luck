@@ -5,7 +5,8 @@ Global.path2track(me.path()) => string ch;
 
 
 while(true){
-    Array.random([5.,-7, -7, 1]) => float note;
+    //Array.random([5.,-7, -7, 1]) => float note;
+    Array.random([5.,-7]) => float note;
     if(Time.sub()%10 != 0){
         Array.random(notes) => note;
     }

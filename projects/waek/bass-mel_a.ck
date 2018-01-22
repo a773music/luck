@@ -1,13 +1,33 @@
 Global.path2track(me.path()) => string ch;
 
 3 => int octave;
-[-2.,-5,1,2,3,7] @=> float notes[];
+[-2.,-5,1,2,3,7] @=> float notes_cm[];
+[-2.,-5,-4,0,3] @=> float notes_fm[];
+
+float note;
+
+Time.sub() => int first_sub;
+int my_sub;
 
 while(true){
-    0 => float note;
-    if(Time.sub()%10 != 0){
-        Array.random(notes) => note;
+    (Time.sub() - first_sub) % 80 => my_sub;
+
+    if(40 <= my_sub && my_sub < 60){
+        //<<<"fm">>>;
+        //Array.random([5.,-7, -7, 1]) => note;
+        Array.random([5.,-7]) => note;
+        if(Time.sub()%10 != 0){
+            Array.random(notes_fm) => note;
+        }
     }
+    else {
+        //<<<"cm">>>;
+        0 => note;
+        if(Time.sub()%10 != 0){
+            Array.random(notes_cm) => note;
+        }
+    }
+    
 
 
     note + octave*12 => note;
