@@ -5,7 +5,7 @@
 16 => Global.part_sync => Global.beats_pr_bar;
 
 ["activity","break","length","","",""] @=> Global.sliders;
-[.1, .1, .5, .5, .5, .5 ] @=> Global.globals;
+[.0, .0, .5, .5, .5, .5 ] @=> Global.globals;
 
 // labels for channels
 ["bass","bell","hi","beat","","","","",
@@ -20,6 +20,10 @@
 
 0 => Global.part; // start here
 
+Global.mute([
+"bell","hi","beat",
+"bd","sd","click","hh","pico"
+],1);
 
 
 int i;

@@ -5,7 +5,9 @@ Global.path2track(me.path()) => string ch;
 ] @=> int beats[];
 
 while(true){
-    if(beats[Time.sub(.5)%beats.size()]){
+    .1::ms => now;
+    //if(beats[Time.sub(.5)%beats.size()]){
+        if(Global.ints["basshit"]){
         spork ~ Midi.trigger(ch);
     }
     Time.wait(.5);
