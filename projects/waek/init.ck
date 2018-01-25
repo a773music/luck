@@ -34,6 +34,12 @@ Array.fill(0,11,Global.scales["rings_seq"]);
 [0.,2,3,7] @=> Global.scales["rings_a"];
 [0.,5,7,8] @=> Global.scales["rings_b"];
 
+//[3.,6,10] @=> Global.scales["rings_c1"];
+//[3.,8,11] @=> Global.scales["rings_c2"];
+[0.,2,5,10] @=> Global.scales["rings_c1"];
+[3.,5,7,10] @=> Global.scales["rings_c2"];
+//[0.,2,4,7] @=> Global.scales["rings_c2"];
+
 Global.mute(["pico","sd","click"],1);
 
 
