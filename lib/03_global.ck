@@ -4,7 +4,8 @@ public class Global {
 
 
     //["192.168.0.5"] @=> static string osc_remote_host[]; // home
-    ["192.168.0.9"] @=> static string osc_remote_host[]; // britt home
+    //["192.168.0.9"] @=> static string osc_remote_host[]; // britt home
+    ["192.168.43.194"] @=> static string osc_remote_host[]; // britt/phoen
     9000 @=> static int osc_remote_port;
 
     0 => static int all_wait; // should we wait?
@@ -13,6 +14,9 @@ public class Global {
 
     [[0.]] @=> static float scales[][];
     scales.clear();
+
+    [0] @=> static int ints[];
+    ints.clear;
     
     0 => static int part;
     -1=> static int next_part;
