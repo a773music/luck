@@ -39,10 +39,11 @@ while(true){
     }
     if(beats_sd[sub%beats_sd.size()]){
         Array.random(sd)$int => note;
-        <<<"sd:" + note>>>;
+        //<<<"sd:" + note>>>;
     }
     if(sub%64>64-(6*Global.get_slider("break"))){
         Array.random(sd)$int => note;
+        //<<<"fill:" + note>>>;
         
     }        
     
