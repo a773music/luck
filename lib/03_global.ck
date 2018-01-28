@@ -4,8 +4,11 @@ public class Global {
 
 
     //["192.168.0.5"] @=> static string osc_remote_host[]; // home
+    ["192.168.43.124"] @=> static string osc_remote_host[]; // phone
+
     //["192.168.0.9"] @=> static string osc_remote_host[]; // britt home
-    ["192.168.43.194"] @=> static string osc_remote_host[]; // britt/phoen
+    //["192.168.43.194"] @=> static string osc_remote_host[]; // britt/phone
+
     9000 @=> static int osc_remote_port;
 
     0 => static int all_wait; // should we wait?
