@@ -5,7 +5,7 @@
 16 => Global.part_sync => Global.beats_pr_bar;
 
 ["activity","break","length","","",""] @=> Global.sliders;
-[.0, .0, .5, .5, .5, .5 ] @=> Global.globals;
+[.4, .0, .5, .5, .5, .5 ] @=> Global.globals;
 
 // labels for channels
 ["bass","bell","hi","beat","","","","",
