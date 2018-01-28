@@ -22,7 +22,7 @@
 
 Global.mute([
 "bell","hi","beat",
-"bd","sd","click","hh","pico"
+"sd","click","hh","pico"
 ],1);
 
 
