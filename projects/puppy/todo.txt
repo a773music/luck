@@ -1,3 +1,0 @@
-bass tri -> filter
-stemmer -> overstemme
-rm -> sd samlet
