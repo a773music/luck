@@ -1,0 +1,9 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+    killall luck;
+else    
+    while [ 1 ]; do
+	killall luck;
+	sleep $1;
+    done
+fi

@@ -1,0 +1,6 @@
+#!/bin/bash
+sudo apt-get install \
+     python-pip libasound2-dev libjack-jackd2-dev python-liblo
+pip install \
+    python-rtmidi
+
