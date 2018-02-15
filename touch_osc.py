@@ -18,11 +18,8 @@ class touch_osc(object):
     press_stop_time = .1
     stop = 0
     
-    touch_osc_host = '192.168.0.5' # atte home
-    #touch_osc_host = '192.168.0.9' # britt home
     touch_osc_out_port = 9000
     touch_osc_in_port = 8000
-    touch_osc = liblo.Address(touch_osc_host, touch_osc_out_port)
     osc_sleep_time = .008
     osc_sleep_time = 0
 
@@ -37,7 +34,10 @@ class touch_osc(object):
                                 cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, touch_osc_host):
+        self.touch_osc_host = touch_osc_host
+        self.touch_osc = liblo.Address(self.touch_osc_host, self.touch_osc_out_port)
+
         self.send_part_names()
         self.send_slider_names()
         self.send_channel_names()
@@ -46,6 +46,7 @@ class touch_osc(object):
         self.send_channels()
         self.send_mutes()
         self.clear_beats()
+
         
         try:
             self.osc_server = liblo.Server(self.touch_osc_in_port)
@@ -229,6 +230,6 @@ class touch_osc(object):
         for clip in self.clips:
             clip.quit()
         self.running = False
-        self._Thread__stop()
+
 
 

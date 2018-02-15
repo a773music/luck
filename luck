@@ -22,16 +22,14 @@ elif not os.path.isfile(init_file):
     sys.exit()
 
 
+touch_osc_host = '192.168.0.6' # atte home
+#touch_osc_host = '192.168.0.9' # britt home
+
 
 g.init_file = init_file
 g.project_folder = project_folder
 
 execfile(init_file)
 
-t = touch_osc()
+t = touch_osc(touch_osc_host)
 
-
-"""
-TODO:
-
-"""
