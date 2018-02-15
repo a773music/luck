@@ -27,6 +27,8 @@ class touch_osc(object):
     current_part = 0
     next_part = -1
     latch_mute = False
+    latch_mel_mute = -1
+    latch_trig_mute = -1
     
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -140,9 +142,10 @@ class touch_osc(object):
         for i in range(g.nb_channels):
             self.send('/page1/fader'+str(i),g.faders[i])
 
-    def send_mutes(self):
+    def send_mutes(self, lo=0, hi=1000):
         for i in range(g.nb_channels):
-            self.send('/page1/mute'+str(i),g.mutes[i])
+            if lo <= i and i <= hi:
+                self.send('/page1/mute'+str(i),g.mutes[i],sleep_time=.005)
         self.send('/page1/allMuteWait', float(self.latch_mute))
 
     def clear_beats(self):
@@ -155,7 +158,7 @@ class touch_osc(object):
         #print "got message '%s' from '%s'" % (path, src.url)
         #for a, t in zip(args, types):
         #    print "argument of type '%s': %s" % (t, a)
-
+        
         if path[:12] == '/page1/fader':
             fader = path[12:]
             print 'handling fader: ' + fader
@@ -173,13 +176,71 @@ class touch_osc(object):
         elif path[:10] == '/page1/all':
             all_action = path[10:]
             print 'handling all_action: ' + all_action
+            if all_action == 'MuteWait':
+                self.latch_mute = (args[0] == 1)
+            elif all_action == 'MuteMel':
+                if self.latch_mute:
+                    if self.latch_mel_mute == 1:
+                        self.latch_mel_mute = -1
+                        self.send('/page1/allMuteMel', 0)
+                        self.send('/page1/allUnmuteMel', 0)
+                    else:
+                        self.latch_mel_mute = 1
+                else:
+                    self.set_mute_mel(1)
+            elif all_action == 'MuteTrig':
+                if self.latch_mute:
+                    if self.latch_trig_mute == 1:
+                        self.latch_trig_mute = -1
+                        self.send('/page1/allMuteTrig', 0)
+                        self.send('/page1/allUnmuteTrig', 0)
+                    else:
+                        self.latch_trig_mute = 1
+                else:
+                    self.set_mute_trig(1)
+            elif all_action == 'UnmuteMel':
+                if self.latch_mute:
+                    if self.latch_mel_mute == 0:
+                        self.latch_mel_mute = -1
+                        self.send('/page1/allMuteMel', 0)
+                        self.send('/page1/allUnmuteMel', 0)
+                    else:
+                        self.latch_mel_mute = 0
+                else:
+                    self.set_mute_mel(0)
+            elif all_action == 'UnmuteTrig':
+                if self.latch_mute:
+                    if self.latch_trig_mute == 0:
+                        self.latch_trig_mute = -1
+                        self.send('/page1/allMuteTrig', 0)
+                        self.send('/page1/allUnmuteTrig', 0)
+                    else:
+                        self.latch_trig_mute = 0
+                else:
+                    self.set_mute_trig(0)
+
         elif path[:11] == '/page1/stop':
             self.stop = int(args[0])
         else:
             print 'unhandled path: ' + path
 
         
-    
+    def set_mute_mel(self, state):
+        for i in range(g.nb_channels):
+            if i < g.nb_melodic_channels and g.get_channel_name(i) not in g.switch_mute_group:
+                g.mutes[i] = int(state)
+            if i >= g.nb_melodic_channels and g.get_channel_name(i) in g.switch_mute_group:
+                g.mutes[i] = int(state)
+        self.send_mutes()
+
+    def set_mute_trig(self, state):
+        for i in range(g.nb_channels):
+            if i >= g.nb_melodic_channels and g.get_channel_name(i) not in g.switch_mute_group:
+                g.mutes[i] = int(state)
+            if i < g.nb_melodic_channels and g.get_channel_name(i) in g.switch_mute_group:
+                g.mutes[i] = int(state)
+        self.send_mutes()
+
 
     def osc_listen(self):
         while self.running:
@@ -187,7 +248,7 @@ class touch_osc(object):
 
     def part_switcher(self):
         while self.running:
-            t.wait(g.part_sync)
+            t.wait(g.part_sync,delay=-.005)
             if self.next_part != -1:
                 for clip in self.clips:
                     clip.quit()
@@ -196,12 +257,35 @@ class touch_osc(object):
                 self.run_part(self.current_part)
                 self.next_part = -1
                 self.send_parts()
-
+            if self.latch_mel_mute != -1:
+                self.set_mute_mel(self.latch_mel_mute)
+                self.latch_mel_mute = -1
+            if self.latch_trig_mute != -1:
+                self.set_mute_trig(self.latch_trig_mute)
+                self.latch_trig_mute = -1
+            self.send('/page1/allMuteMel', 0)
+            self.send('/page1/allUnmuteMel', 0)
+            self.send('/page1/allMuteTrig', 0)
+            self.send('/page1/allUnmuteTrig', 0)
+            
     def blinker(self):
         blink = self.running
         while self.running:
             if self.next_part != -1:
                 self.send('/page1/part'+str(self.next_part),int(blink))
+            if self.latch_mel_mute == 0:
+                self.send('/page1/allUnmuteMel', int(blink))
+                self.send('/page1/allMuteMel', 0)
+            elif self.latch_mel_mute == 1:
+                self.send('/page1/allMuteMel', int(blink))
+                self.send('/page1/allUnmuteMel', 0)
+            if self.latch_trig_mute == 0:
+                self.send('/page1/allUnmuteTrig', int(blink))
+                self.send('/page1/allMuteTrig', 0)
+            if self.latch_trig_mute == 1:
+                self.send('/page1/allMuteTrig', int(blink))
+                self.send('/page1/allUnmuteTrig', 0)
+                
             blink = not blink
             time.sleep(self.blink_time)
 

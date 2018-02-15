@@ -22,10 +22,12 @@ class globals(object):
     nb_sliders = 6
     nb_channels = 24
     nb_beaters = 24
+    nb_melodic_channels = 8
     sliders = [0] * nb_sliders
     faders = [0] * nb_channels
     mutes = [0] * nb_channels
 
+    switch_mute_group = ['pico_dr1','pico_dr2']
     
     beats_per_bar = 8
     part_sync = 8
@@ -51,6 +53,12 @@ class globals(object):
         except:
             return False
         return True
+
+    def get_channel_name(self, channel_number):
+        if channel_number >= len(self.channel_names):
+            return ''
+        else:
+            return self.channel_names[channel_number]
     
     def file_name2channel(self, file_name):
         channel_name = self.file_name2channel_name(file_name)

@@ -33,10 +33,10 @@ class timer(object):
         self.start_time = time.time()
         self.running = True
 
-    def wait(self,beats, early=0):
+    def wait(self,beats, delay=0):
         while not self.running:
             pass
-        time.sleep(self.beats2time(beats) - ((time.time() - self.start_time - early) % self.beats2time(beats)))
+        time.sleep(self.beats2time(beats) - ((time.time() - self.start_time - delay) % self.beats2time(beats)))
     
     def sub(self, nb_beats):
         if nb_beats <= 0:
