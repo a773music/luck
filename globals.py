@@ -26,12 +26,13 @@ class globals(object):
     sliders = [0] * nb_sliders
     faders = [0] * nb_channels
     mutes = [0] * nb_channels
-
+    activity = [0] * nb_channels
+    
     switch_mute_group = ['pico_dr1','pico_dr2']
     
     beats_per_bar = 8
     part_sync = 8
-
+    activity_time = .15
     
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -66,6 +67,9 @@ class globals(object):
             channel = self.channel_names.index(channel_name)
         except:
             return -1
+        return channel
+
+    def channel2midi_channel(self, channel):
         if channel > 7:
             channel = 9
         return channel
@@ -84,7 +88,7 @@ class globals(object):
     def file_name2note(self, file_name):
         #global lowest_trigger_note
         note = -1
-        channel = self.file_name2channel(file_name)
+        channel = self.channel2midi_channel(self.file_name2channel(file_name))
         if channel == 9:
             channel_name = self.file_name2channel_name(file_name)
             try:

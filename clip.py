@@ -3,14 +3,17 @@ import threading, datetime, os, time, random
 from globals import *
 from timer import * 
 from midi import *
+from touch_osc import *
+
+
+
 
 class clip(threading.Thread):
     global count, running
 
-    #m = midi()
-
     ok = False
     running = False
+    channel = 0
     midi_channel = 0
 
     playing_note = -1
@@ -19,12 +22,11 @@ class clip(threading.Thread):
         threading.Thread.__init__(self)
         self.part = g.file_name2part(file_name)
         self.channel = g.file_name2channel(file_name)
+        self.midi_channel = g.channel2midi_channel(self.channel)
         self.note = g.file_name2note(file_name)
-        #print 'clip filename: ' + file_name + 'channel: ' + str(self.channel)
         if os.path.isfile(file_name):
             self.file_name = file_name
             self.ok = True
-            #self.stop_file = '_' + file_name
         else:
             self.file_name = None
             print('missing file: ' + file_name)
@@ -34,38 +36,27 @@ class clip(threading.Thread):
             self.stop_file = None
 
             
-        """
-        self.midi_channel = midi_channel
-        self.midi_note = midi_note
-        """
-            
-    def on(self, note=-1, channel=-1):
-        if channel == -1:
-            channel = self.channel
+    def on(self, note=-1, midi_channel=-1):
+        if midi_channel == -1:
+            midi_channel = self.midi_channel
         if note == -1:
             note = self.note
 
         if self.playing_note != -1:
-            m.note_off(channel, note)
-        m.note_on(channel, note)
+            m.note_off(midi_channel, note)
+        if not g.mutes[self.channel]:
+            m.note_on(midi_channel, note)
+            g.activity[self.channel] = 1
         self.playing_note = note
-        #time.sleep(.001)
-        #self.m.note_off(channel, note)
-        #self.playing_note = -1
         
     def run(self):
-        #global running
-        #print('in clip.run...')
         if self.file_name:
             self.running = True
-            #running = True
             execfile(self.file_name)
             self.running = False
             
     def quit(self):
-        #global running
         self.running = False
-        #running = False
         self._Thread__stop()
         if self.stop_file:
             execfile(self.stop_file)
@@ -74,27 +65,3 @@ class clip(threading.Thread):
     def debug(self):
         print 'clip, file_name: ' + self.file_name + ', channel: ' + str(self.channel) + ', note: ' + str(self.note)
             
-    """
-    def file_name2channel(self, file_name):
-        file_name = file_name[:file_name.find('-'):]
-        file_name = file_name[file_name.find('/')+1:]
-        return file_name
-    """
-#c = clip('test.py')
-#print(c)
-            
-"""
-clips = []
-
-for i in range(4):
-    c = clip('test.py')
-    c.start()
-    clips.append(c)
-
-
-time.sleep(1)
-
-for c in clips:
-    c.quit()
-
-"""

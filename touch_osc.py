@@ -36,9 +36,9 @@ class touch_osc(object):
                                 cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self, touch_osc_host):
-        self.touch_osc_host = touch_osc_host
-        self.touch_osc = liblo.Address(self.touch_osc_host, self.touch_osc_out_port)
+    def __init__(self):
+        #self.touch_osc_host = g.touch_osc_host
+        self.touch_osc = liblo.Address(g.touch_osc_host, self.touch_osc_out_port)
 
         self.send_part_names()
         self.send_slider_names()
@@ -77,6 +77,10 @@ class touch_osc(object):
         s = threading.Thread(target=self.stop_listener)
         s.start()
         self.threads.append(s)
+        
+        a = threading.Thread(target=self.activity)
+        a.start()
+        self.threads.append(a)
         
 
         t.start()        
@@ -152,7 +156,18 @@ class touch_osc(object):
         for i in range(g.nb_beaters):
             self.send('/page1/pulse'+str(i),0)
 
-
+    def activity(self):
+        turn_off_times = [-1] * g.nb_channels
+        while self.running:
+            for i in range(g.nb_channels):
+                if g.activity[i]:
+                    self.send('/page1/activity'+str(i),1)
+                    turn_off_times[i] = time.time() + g.activity_time
+                    g.activity[i] = 0
+                if turn_off_times[i] > -1 and turn_off_times[i] < time.time():
+                    self.send('/page1/activity'+str(i),0)
+                    turn_off_times[i] = -1
+            time.sleep(.001)
 
     def osc_handler(self, path, args, types, src):
         #print "got message '%s' from '%s'" % (path, src.url)
@@ -175,7 +190,7 @@ class touch_osc(object):
             self.send_parts()
         elif path[:10] == '/page1/all':
             all_action = path[10:]
-            print 'handling all_action: ' + all_action
+            #print 'handling all_action: ' + all_action
             if all_action == 'MuteWait':
                 self.latch_mute = (args[0] == 1)
             elif all_action == 'MuteMel':
@@ -314,6 +329,7 @@ class touch_osc(object):
         for clip in self.clips:
             clip.quit()
         self.running = False
+
 
 
 

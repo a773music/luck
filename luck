@@ -1,8 +1,8 @@
 #!/usr/bin/python2
 import time, sys, os
 from globals import *
-from touch_osc import *
 from timer import *
+from touch_osc import *
 
 if len(sys.argv) == 1:
     print('missing argument')
@@ -22,8 +22,8 @@ elif not os.path.isfile(init_file):
     sys.exit()
 
 
-touch_osc_host = '192.168.0.6' # atte home
-#touch_osc_host = '192.168.0.9' # britt home
+g.touch_osc_host = '192.168.0.6' # atte home
+#g.touch_osc_host = '192.168.0.9' # britt home
 
 
 g.init_file = init_file
@@ -31,5 +31,4 @@ g.project_folder = project_folder
 
 execfile(init_file)
 
-t = touch_osc(touch_osc_host)
-
+touch = touch_osc()
