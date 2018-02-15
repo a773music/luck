@@ -1,9 +1,9 @@
 # Luck
 
-Live environment written in python
-* Working with generative sequencing
-* Sound generating handled in eurorack (through cv.ocd)
-* Interfacing handled by TouchOSC
+Open-ended music sequencer written in python
+* Each part is a piece of python code, making it easy to work with
+  generative sequencing
+* Controlled by TouchOSC on iPad
 
 ## Prerequisites
 run
